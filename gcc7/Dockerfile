@@ -110,8 +110,10 @@ RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc-7.3.0 \
  && rm -f /osxcross7/target/bin/x86_64-apple-darwin14-g++-7.3.0 \
  && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/x86_64-apple-darwin14-gcc "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-gcc-7.3.0 \
  && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/x86_64-apple-darwin14-g++ "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-g++-7.3.0 \
+ && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/dsymutil "$@" <&1') > /usr/local/bin/dsymutil \
  && chmod +x /usr/local/bin/x86_64-apple-darwin14-gcc-7.3.0 \
  && chmod +x /usr/local/bin/x86_64-apple-darwin14-g++-7.3.0 \
+ && chmod +x /usr/local/bin/dsymutil \
  && ln -s /osxcross7/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross7/target/bin/install_name_tool \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \

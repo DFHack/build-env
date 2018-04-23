@@ -1,0 +1,84 @@
+#!/bin/bash -e
+
+usage()
+{
+	echo 'Usage: dfhack-configure [os] [bits] [mode] [cmake args...]' >&2
+	echo 'os: windows, linux, or macosx' >&2
+	echo 'bits: 32 or 64' >&2
+	echo 'mode: Release or RelWithDebInfo' >&2
+}
+
+if [[ $# -lt 3 ]]; then
+	usage
+	exit 1
+fi
+
+os=$1
+bits=$2
+mode=$3
+shift 3
+
+cmake-windows()
+{
+	WINEDEBUG=-all wine cmd /c cmake.exe "$@"
+	wineserver -w
+	echo '* replacing PDB types in Visual C++ projects' >&2
+	find -name '*.vcxproj' -exec sed -e 's#<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>#<DebugInformationFormat>OldStyle</DebugInformationFormat>#' -i {} \;
+}
+
+cmake=cmake
+args=
+
+case $os in
+windows)
+	cmake=cmake-windows
+
+	case $bits in
+	32)
+		args=' -G"Visual Studio 14"'
+		;;
+	64)
+		args=' -G"Visual Studio 14 Win64" -T v140_xp'
+		;;
+	*)
+		usage
+		exit 1
+		;;
+	esac
+
+	echo 'Windows is not yet supported (but hopefully it will be soon!)' >&2
+	exit 255
+	;;
+linux)
+	;;
+macosx)
+	args="$args -DCMAKE_SYSTEM_NAME=Darwin -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native"
+	args="$args -DCMAKE_C_COMPILER=x86_64-apple-darwin14-gcc-7.3.0 -DCMAKE_CXX_COMPILER=x86_64-apple-darwin14-g++-7.3.0 -DCMAKE_FIND_ROOT_PATH=/osxcross48/target/macports/pkgs/opt/local -DCMAKE_OSX_SYSROOT=/osxcross7/target/SDK/MacOSX10.10.sdk"
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+case $bits in
+32|64)
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+case $mode in
+Release|RelWithDebInfo)
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+args=" -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode $args"
+
+exec $cmake $args "$@" <&1

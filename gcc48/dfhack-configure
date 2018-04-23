@@ -1,0 +1,61 @@
+#!/bin/bash -e
+
+usage()
+{
+	echo 'Usage: dfhack-configure [os] [bits] [mode] [cmake args...]' >&2
+	echo 'os: windows, linux, or macosx' >&2
+	echo 'bits: 32 or 64' >&2
+	echo 'mode: Release or RelWithDebInfo' >&2
+}
+
+if [[ $# -lt 3 ]]; then
+	usage
+	exit 1
+fi
+
+os=$1
+bits=$2
+mode=$3
+shift 3
+
+args=
+
+case $os in
+windows)
+	echo 'Windows is not supported on the GCC 4.8 Docker image.' >&2
+	exit 1
+	;;
+linux)
+	args="$args -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8"
+	;;
+macosx)
+	args="$args -DCMAKE_SYSTEM_NAME=Darwin -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native"
+	args="$args -DCMAKE_C_COMPILER=x86_64-apple-darwin14-gcc-4.8.5 -DCMAKE_CXX_COMPILER=x86_64-apple-darwin14-g++-4.8.5 -DCMAKE_FIND_ROOT_PATH=/osxcross48/target/macports/pkgs/opt/local -DCMAKE_OSX_SYSROOT=/osxcross48/target/SDK/MacOSX10.10.sdk"
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+case $bits in
+32|64)
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+case $mode in
+Release|RelWithDebInfo)
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+args=" -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode $args"
+
+exec cmake $args "$@" <&1

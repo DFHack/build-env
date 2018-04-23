@@ -1,0 +1,140 @@
+diff --git a/build_gcc.sh b/build_gcc.sh
+index 1f02286..d9eacc0 100755
+--- a/build_gcc.sh
++++ b/build_gcc.sh
+@@ -24,11 +24,6 @@ if [ -z "$GCC_VERSION" ]; then
+   #GCC_VERSION=5-20140928 # snapshot
+ fi
+ 
+-# GCC mirror
+-GCC_MIRROR="ftp://ftp.fu-berlin.de/unix/languages/gcc"
+-
+-require wget
+-
+ pushd $OSXCROSS_BUILD_DIR &>/dev/null
+ 
+ function remove_locks()
+@@ -40,14 +35,6 @@ source $BASE_DIR/tools/trap_exit.sh
+ 
+ if [ ! -f "have_gcc_${GCC_VERSION}_${OSXCROSS_TARGET}" ]; then
+ 
+-pushd $OSXCROSS_TARBALL_DIR &>/dev/null
+-if [[ $GCC_VERSION != *-* ]]; then
+-  wget -c "$GCC_MIRROR/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz"
+-else
+-  wget -c "$GCC_MIRROR/snapshots/$GCC_VERSION/gcc-$GCC_VERSION.tar.gz"
+-fi
+-popd &>/dev/null
+-
+ echo "cleaning up ..."
+ rm -rf gcc* 2>/dev/null
+ 
+@@ -59,6 +46,12 @@ pushd gcc*$GCC_VERSION* &>/dev/null
+ rm -f $OSXCROSS_TARGET_DIR/bin/*-gcc*
+ rm -f $OSXCROSS_TARGET_DIR/bin/*-g++*
+ 
++if [ $(osxcross-cmp $GCC_VERSION '>=' 4.0.0) == 1 ] &&
++   [ $(osxcross-cmp $GCC_VERSION '<' 6.1.0) == 1 ]; then
++  # https://gcc.gnu.org/ml/gcc-patches/2015-08/msg00375.html
++  patch -p1 < $PATCH_DIR/gcc-4.8-buildfix.patch
++fi
++
+ if [ $(osxcross-cmp $GCC_VERSION '>' 5.0.0) == 1 ] &&
+    [ $(osxcross-cmp $GCC_VERSION '<' 5.3.0) == 1 ]; then
+   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66035
+@@ -96,7 +89,11 @@ if [ "$PLATFORM" != "Darwin" ]; then
+   EXTRACONFFLAGS+="--with-as=$OSXCROSS_TARGET_DIR/bin/x86_64-apple-$OSXCROSS_TARGET-as "
+ fi
+ 
+-LANGS="c,c++,objc,obj-c++"
++LANGS="c,c++"
++
++if [ -n "$ENABLE_OBJC" ]; then
++  LANGS+=",objc,obj-c++"
++fi
+ 
+ if [ -n "$ENABLE_FORTRAN" ]; then
+   LANGS+=",fortran"
+@@ -146,18 +143,30 @@ source tools/tools.sh
+ 
+ pushd $OSXCROSS_TARGET_DIR/bin &>/dev/null
+ 
+-if [ ! -f i386-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX ]; then
++if [ ! -f i386-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX ]; then
+   mv x86_64-apple-$OSXCROSS_TARGET-gcc$EXESUFFIX \
+-     x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
++     x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX
+ 
+   mv x86_64-apple-$OSXCROSS_TARGET-g++$EXESUFFIX \
+-     x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
++     x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX
++
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
++                 i386-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX
+ 
+-  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX \
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
++                 i386-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX
++
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
+                  i386-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
+ 
+-  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX \
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
++                 x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
++
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
+                  i386-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
++
++  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
++                 x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
+ fi
+ 
+ echo "compiling wrapper ..."
+diff --git a/patches/gcc-4.8-buildfix.patch b/patches/gcc-4.8-buildfix.patch
+new file mode 100644
+index 0000000..81c93c9
+--- /dev/null
++++ b/patches/gcc-4.8-buildfix.patch
+@@ -0,0 +1,28 @@
++diff --git a/gcc/cp/cfns.gperf b/gcc/cp/cfns.gperf
++index 68acd3d..953262f 100644
++--- a/gcc/cp/cfns.gperf
+++++ b/gcc/cp/cfns.gperf
++@@ -22,6 +22,9 @@ __inline
++ static unsigned int hash (const char *, unsigned int);
++ #ifdef __GNUC__
++ __inline
+++#ifdef __GNUC_STDC_INLINE__
+++__attribute__ ((__gnu_inline__))
+++#endif
++ #endif
++ const char * libc_name_p (const char *, unsigned int);
++ %}
++diff --git a/gcc/cp/cfns.h b/gcc/cp/cfns.h
++index 1c6665d..6d00c0e 100644
++--- a/gcc/cp/cfns.h
+++++ b/gcc/cp/cfns.h
++@@ -53,6 +53,9 @@ __inline
++ static unsigned int hash (const char *, unsigned int);
++ #ifdef __GNUC__
++ __inline
+++#ifdef __GNUC_STDC_INLINE__
+++__attribute__ ((__gnu_inline__))
+++#endif
++ #endif
++ const char * libc_name_p (const char *, unsigned int);
++ /* maximum key range = 391, duplicates = 0 */
+diff --git a/wrapper/build.sh b/wrapper/build.sh
+index d4d5c92..768ba09 100755
+--- a/wrapper/build.sh
++++ b/wrapper/build.sh
+@@ -134,6 +134,8 @@ if [ $TARGETCOMPILER = "clang" ]; then
+   create_wrapper_link clang++-stdc++ 2
+   create_wrapper_link clang++-gstdc++ 2
+ elif [ $TARGETCOMPILER = "gcc" ]; then
++  create_wrapper_link gcc-$GCC_VERSION 2
++  create_wrapper_link g++-$GCC_VERSION 2
+   create_wrapper_link gcc 2
+   create_wrapper_link g++ 2
+   create_wrapper_link g++-libc++ 2

@@ -66,5 +66,7 @@ RUN dpkg --add-architecture i386 \
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 
+RUN rm /usr/lib/ccache/x86_64-apple-darwin14-gcc /usr/lib/ccache/x86_64-apple-darwin14-g++
+
 USER buildmaster
 WORKDIR /home/buildmaster

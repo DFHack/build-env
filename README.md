@@ -2,6 +2,8 @@
 
 *Currently, this does not support Windows builds. I'm trying to fix that. You can see my progress here: <https://what.thedailywtf.com/post/1337023>*
 
+*ccache is disabled for Mac OS X cross compilation until I can figure out what's causing it to break.*
+
 ## Contents
 
 ### GCC 4.8 image
@@ -14,7 +16,7 @@
   - Linux and Mac OS X
   - Minimum OS X version 10.6
 - ccache (intended to have cache directory stored outside the container)
-- CMake version 3.5 or later
+- CMake version 3.11 or later
 - Google protocol buffer compiler (shim DFHack native build directory at `/home/buildmaster/dfhack-native`)
 - Perl with `XML::LibXML` and `XML::LibXSLT` (required for df-structures)
 - OpenGL headers and libraries (required for Stonesense)
@@ -31,7 +33,7 @@
   - Linux and Mac OS X
   - Minimum OS X version 10.6
 - ccache (intended to have cache directory stored outside the container)
-- CMake version 3.10 or later
+- CMake version 3.11 or later
 - Google protocol buffer compiler (shim DFHack native build directory at `/home/buildmaster/dfhack-native`)
 - Perl with `XML::LibXML` and `XML::LibXSLT` (required for df-structures)
 - OpenGL headers and libraries (required for Stonesense)

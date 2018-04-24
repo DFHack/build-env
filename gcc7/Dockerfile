@@ -47,7 +47,7 @@ ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime \
     GCC_VERSION=7.3.0 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
-    PATH=/usr/lib/ccache:/osxcross/target/bin:$PATH \
+    PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH \
     WINEDEBUG=-all,err+all
 
 ADD osxcross-patches.diff /osxcross/osxcross-patches.diff
@@ -56,7 +56,6 @@ RUN dpkg --add-architecture i386 \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         clang \
-        cmake \
         g++-multilib \
         gcc-multilib \
         libgmp-dev \
@@ -69,14 +68,17 @@ RUN dpkg --add-architecture i386 \
         python3-sphinx \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
- && mkdir -p /osxcross/tarballs \
+ && mkdir -p /osxcross/tarballs /opt/cmake \
  && cd /osxcross/tarballs \
+ && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
  && curl -LSo gcc-7.3.0.tar.gz https://ftpmirror.gnu.org/gcc/gcc-7.3.0/gcc-7.3.0.tar.gz \
- && (echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
+ && (echo "3aa8d3b53903563bdc13dfec80716c286b2228db36ef65c23bc616f9bb930367  cmake.tar.gz"; \
+     echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
      echo "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce  MacOSX10.10.sdk.tar.xz"; \
      echo "fa06e455ca198ddc11ea4ddf2a394cf7cfb66aa7e0ab98cc1184189f1d405870  gcc-7.3.0.tar.gz") | sha256sum -c \
+ && tar xzCf /opt/cmake /osxcross/tarballs/cmake.tar.gz --strip-components=1 \
  && tar xzCf /osxcross /osxcross/tarballs/osxcross.tar.gz --strip-components=1 \
  && cd /osxcross \
  && patch -p1 < osxcross-patches.diff \
@@ -96,8 +98,6 @@ RUN dpkg --add-architecture i386 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         ccache \
  && rm -rf /var/lib/apt/lists/* \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
  && ln -s /osxcross/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross/target/bin/install_name_tool \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
@@ -107,8 +107,6 @@ RUN dpkg --add-architecture i386 \
      echo 'set_target_properties(protoc-bin PROPERTIES IMPORTED_LOCATION_RELWITHDEBINFO "/usr/bin/protoc" IMPORTED_LOCATION_RELEASE "/usr/bin/protoc")') > /home/buildmaster/dfhack-native/ImportExecutables.cmake
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
-
-RUN rm /usr/lib/ccache/x86_64-apple-darwin14-gcc /usr/lib/ccache/x86_64-apple-darwin14-g++
 
 USER buildmaster
 WORKDIR /home/buildmaster

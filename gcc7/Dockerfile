@@ -35,6 +35,11 @@
 #COPY --from=msvc-downloader /download-msvc.exe /home/buildmaster/download-msvc.exe
 #
 #RUN wine download-msvc.exe
+#
+#RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v4.1.0/clcache-4.1.0.zip \
+# && echo "3d41d98000e1edb705f2237204b943edd95afeb95a6f33c9ff87aa986471cce7  clcache.zip" | sha256sum -c \
+# && unzip clcache.zip -d /home/buildmaster/.wine/drive_c/clcache \
+# && rm -f clcache.zip
 
 FROM buildpack-deps:bionic AS osxcross-7
 
@@ -81,7 +86,7 @@ FROM buildpack-deps:bionic
 ENV WINEDEBUG=-all,err+all \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
-    PATH=/usr/lib/ccache:$PATH \
+    PATH=/usr/lib/ccache:/osxcross7/target/bin:$PATH \
     CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime
 
 RUN dpkg --add-architecture i386 \
@@ -104,16 +109,8 @@ COPY --from=osxcross-7 /osxcross7/target /osxcross7/target
 ADD dfhack-configure /usr/local/bin/dfhack-configure
 ADD dfhack-make /usr/local/bin/dfhack-make
 
-RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc-7.3.0 \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++-7.3.0 \
- && rm -f /osxcross7/target/bin/x86_64-apple-darwin14-gcc-7.3.0 \
- && rm -f /osxcross7/target/bin/x86_64-apple-darwin14-g++-7.3.0 \
- && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/x86_64-apple-darwin14-gcc "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-gcc-7.3.0 \
- && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/x86_64-apple-darwin14-g++ "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-g++-7.3.0 \
- && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross7/target/bin:$PATH'; echo 'exec /osxcross7/target/bin/dsymutil "$@" <&1') > /usr/local/bin/dsymutil \
- && chmod +x /usr/local/bin/x86_64-apple-darwin14-gcc-7.3.0 \
- && chmod +x /usr/local/bin/x86_64-apple-darwin14-g++-7.3.0 \
- && chmod +x /usr/local/bin/dsymutil \
+RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc \
+ && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
  && ln -s /osxcross7/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross7/target/bin/install_name_tool \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \

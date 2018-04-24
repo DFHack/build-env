@@ -24,6 +24,6 @@ esac
 
 WINEDEBUG=-all wine cmd /c \
 	call 'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat' "$arch" '&' \
-	msbuild /m /p:Platform="$platform" /p:Configuration="$mode" "$1".vcxproj
+	msbuild /m /p:Platform="$platform" /p:Configuration="$mode" /p:TrackFileAccess=false /p:CLToolExe=clcache.exe /p:CLToolPath=C:\\clcache "$1".vcxproj
 
 wineserver -w

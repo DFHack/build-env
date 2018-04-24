@@ -42,7 +42,7 @@ FROM buildpack-deps:trusty
 
 ENV MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
-    PATH=/usr/lib/ccache:$PATH \
+    PATH=/usr/lib/ccache:/osxcross48/target/bin:$PATH \
     CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime
 
 RUN dpkg --add-architecture i386 \
@@ -66,14 +66,8 @@ COPY --from=osxcross-48 /osxcross48/target /osxcross48/target
 ADD dfhack-configure /usr/local/bin/dfhack-configure
 ADD dfhack-make /usr/local/bin/dfhack-make
 
-RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc-4.8.5 \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++-4.8.5 \
- && rm -f /osxcross48/target/bin/x86_64-apple-darwin14-gcc-4.8.5 \
- && rm -f /osxcross48/target/bin/x86_64-apple-darwin14-g++-4.8.5 \
- && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross48/target/bin:$PATH'; echo 'exec /osxcross48/target/bin/x86_64-apple-darwin14-gcc "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-gcc-4.8.5 \
- && (echo '#!/bin/sh -e'; echo 'export PATH=/osxcross48/target/bin:$PATH'; echo 'exec /osxcross48/target/bin/x86_64-apple-darwin14-g++ "$@" <&1') > /usr/local/bin/x86_64-apple-darwin14-g++-4.8.5 \
- && chmod +x /usr/local/bin/x86_64-apple-darwin14-gcc-4.8.5 \
- && chmod +x /usr/local/bin/x86_64-apple-darwin14-g++-4.8.5 \
+RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc \
+ && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
  && ln -s /osxcross48/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross48/target/bin/install_name_tool \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \

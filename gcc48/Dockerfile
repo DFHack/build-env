@@ -70,6 +70,7 @@ RUN ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc \
  && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
  && ln -s /osxcross48/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross48/target/bin/install_name_tool \
+ && ln -s /osxcross48/target/libexec /usr/ \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir /home/buildmaster/dfhack-native \
  && (echo 'add_executable(protoc-bin IMPORTED)'; \

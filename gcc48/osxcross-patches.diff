@@ -55,42 +55,6 @@ index 1f02286..d9eacc0 100755
  
  if [ -n "$ENABLE_FORTRAN" ]; then
    LANGS+=",fortran"
-@@ -146,18 +143,30 @@ source tools/tools.sh
- 
- pushd $OSXCROSS_TARGET_DIR/bin &>/dev/null
- 
--if [ ! -f i386-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX ]; then
-+if [ ! -f i386-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX ]; then
-   mv x86_64-apple-$OSXCROSS_TARGET-gcc$EXESUFFIX \
--     x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
-+     x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX
- 
-   mv x86_64-apple-$OSXCROSS_TARGET-g++$EXESUFFIX \
--     x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
-+     x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX
-+
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
-+                 i386-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX
- 
--  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX \
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
-+                 i386-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX
-+
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
-                  i386-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
- 
--  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX \
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-gcc-$GCC_VERSION$EXESUFFIX \
-+                 x86_64-apple-$OSXCROSS_TARGET-base-gcc$EXESUFFIX
-+
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
-                  i386-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
-+
-+  create_symlink x86_64-apple-$OSXCROSS_TARGET-base-g++-$GCC_VERSION$EXESUFFIX \
-+                 x86_64-apple-$OSXCROSS_TARGET-base-g++$EXESUFFIX
- fi
- 
- echo "compiling wrapper ..."
 diff --git a/patches/gcc-4.8-buildfix.patch b/patches/gcc-4.8-buildfix.patch
 new file mode 100644
 index 0000000..81c93c9
@@ -125,16 +89,3 @@ index 0000000..81c93c9
 + #endif
 + const char * libc_name_p (const char *, unsigned int);
 + /* maximum key range = 391, duplicates = 0 */
-diff --git a/wrapper/build.sh b/wrapper/build.sh
-index d4d5c92..768ba09 100755
---- a/wrapper/build.sh
-+++ b/wrapper/build.sh
-@@ -134,6 +134,8 @@ if [ $TARGETCOMPILER = "clang" ]; then
-   create_wrapper_link clang++-stdc++ 2
-   create_wrapper_link clang++-gstdc++ 2
- elif [ $TARGETCOMPILER = "gcc" ]; then
-+  create_wrapper_link gcc-$GCC_VERSION 2
-+  create_wrapper_link g++-$GCC_VERSION 2
-   create_wrapper_link gcc 2
-   create_wrapper_link g++ 2
-   create_wrapper_link g++-libc++ 2

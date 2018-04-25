@@ -20,7 +20,6 @@ RUN dpkg --add-architecture i386 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         mesa-common-dev \
-        protobuf-compiler \
         python-pip \
         python-dev \
         zlib1g-dev:amd64 \
@@ -60,9 +59,12 @@ RUN dpkg --add-architecture i386 \
  && ln -s /bin/true /osxcross/target/bin/install_name_tool \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir /home/buildmaster/dfhack-native \
- && (echo 'add_executable(protoc-bin IMPORTED)'; \
-     echo 'set_property(TARGET protoc-bin APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO;RELEASE)'; \
-     echo 'set_target_properties(protoc-bin PROPERTIES IMPORTED_LOCATION_RELWITHDEBINFO "/usr/bin/protoc" IMPORTED_LOCATION_RELEASE "/usr/bin/protoc")') > /home/buildmaster/dfhack-native/ImportExecutables.cmake
+ && cd /home/buildmaster/dfhack-native \
+ && git clone --depth=1 https://github.com/DFHack/dfhack.git \
+ && cmake dfhack/depends/protobuf \
+ && make -j$(nproc) \
+ && rm -rf dfhack \
+ && chmod -R buildmaster:buildmaster /home/buildmaster/dfhack-native
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 

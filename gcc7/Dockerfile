@@ -102,11 +102,24 @@ RUN dpkg --add-architecture i386 \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
- && git clone --depth=1 https://github.com/DFHack/dfhack.git \
- && cmake dfhack/depends/protobuf \
- && make -j$(nproc) \
- && rm -rf dfhack \
- && chmod -R buildmaster:buildmaster /home/buildmaster/dfhack-native
+ && git clone --depth=1 --recursive https://github.com/DFHack/dfhack.git \
+ && cmake dfhack \
+        -DDFHACK_BUILD_ARCH=64 \
+        -DBUILD_LIBRARY=OFF \
+        -DBUILD_PLUGINS=OFF \
+        -DBUILD_RUBY=OFF \
+        -DBUILD_SUPPORTED=OFF \
+        -DDOWNLOAD_RUBY=OFF \
+ && make -j$(nproc) protoc-bin \
+ && cd .. \
+ && mkdir -p dfhack-native-bin/depends/protobuf \
+ && mv dfhack-native/ImportExecutables.cmake dfhack-native-bin \
+ && mv dfhack-native/depends/protobuf/libprotobuf.so \
+       dfhack-native/depends/protobuf/libprotoc.so \
+       dfhack-native/depends/protobuf/protoc \
+       dfhack-native-bin/depends/protobuf \
+ && rm -rf dfhack-native \
+ && mv dfhack-native-bin dfhack-native
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 

@@ -1,29 +1,3 @@
 #!/bin/bash -e
 
-if [[ ! -f 'PACKAGE.vcxproj' ]]; then
-	# Linux or Mac OS X build
-	exec make -j$(nproc) "$1"
-fi
-
-mode=$(cmake -LA -N | grep 'CMAKE_BUILD_TYPE' | cut -d= -f2)
-bits=$(cmake -LA -N | grep 'DFHACK_BUILD_ARCH_PREV' | cut -d= -f2)
-
-arch=
-platform=
-
-case $bits in
-32)
-	arch=x86
-	platform=Win32
-	;;
-64)
-	arch=amd64
-	platform=x64
-	;;
-esac
-
-WINEDEBUG=-all wine cmd /c \
-	call 'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat' "$arch" '&' \
-	msbuild /m /p:Platform="$platform" /p:Configuration="$mode" /p:TrackFileAccess=false /p:CLToolExe=clcache.exe /p:CLToolPath=C:\\clcache "$1".vcxproj
-
-wineserver -w
+exec make -j$(nproc) "$1"

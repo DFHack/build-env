@@ -3,7 +3,6 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
@@ -17,8 +16,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type itemPayload struct {
@@ -373,22 +370,71 @@ func extractVSIXFile(destPath string, f *zip.File) {
 	}
 }
 
-func replacePlaceholders(source string) string {
-	source = strings.Replace(source, "[CEIPConsent]", "/CEIPConsent", -1)
-	source = strings.Replace(source, "\"[LogFile]\"", "con", -1)
-	if !strings.ContainsRune(source, '[') {
-		return source
+func mustSetEnv(name, value string) {
+	if err := os.Setenv(name, value); err != nil {
+		panic(err)
 	}
+}
 
-	panic("placeholder present: " + source)
+func init() {
+	mustSetEnv("CEIPConsent", "/CEIPConsent")
+	mustSetEnv("LogFile", "con")
+	mustSetEnv("SharedInstallDrive", "C:")
+	mustSetEnv("CustomInstallPath", "C:\\BuildTools")
+	mustSetEnv("CurrentOperation", "Install")
+}
+
+func replacePlaceholders(source string) string {
+	var converted []byte
+	bad := false
+
+	for {
+		start := strings.IndexByte(source, '[')
+		if start == -1 {
+			converted = append(converted, source...)
+			if bad {
+				panic("missing values for one or more placeholders: " + string(converted))
+			}
+			return string(converted)
+		}
+		converted = append(converted, source[:start]...)
+		source = source[start+1:]
+
+		end := strings.IndexByte(source, ']')
+		if end == -1 {
+			panic("unterminated placeholder: " + string(converted) + "[" + source)
+		}
+
+		if e := os.Getenv(source[:end]); e != "" {
+			source = source[end+1:]
+			converted = append(converted, e...)
+			continue
+		}
+
+		bad = true
+		converted = append(append(converted, '['), source[:end+1]...)
+		source = source[end+1:]
+	}
 }
 
 func splitParameters(arguments string) []string {
-	if !strings.ContainsRune(arguments, '"') {
-		return strings.Split(arguments, " ")
-	}
+	var args []string
+	for {
+		next := strings.IndexAny(arguments, "\" ")
+		if next == -1 {
+			return append(args, arguments)
+		}
 
-	panic("arguments include quotes: " + arguments)
+		if arguments[next] == ' ' {
+			if next != 0 {
+				args = append(args, arguments[:next])
+			}
+			arguments = arguments[next+1:]
+			continue
+		}
+
+		panic("arguments include quotes: " + arguments)
+	}
 }
 
 var msRootCertificates = func(pem string) *x509.CertPool {
@@ -509,43 +555,45 @@ func validateSignature(data []byte) {
 	log.Println("TODO: validate signature")
 	return
 
-	newLine := bytes.IndexByte(data, '\n')
-	if data[newLine-1] == '\r' && data[newLine-2] == ',' {
-		data[newLine-2] = '}'
-	} else {
-		panic("unexpected signed manifest format")
-	}
-	newLine++
+	/*
+		newLine := bytes.IndexByte(data, '\n')
+		if data[newLine-1] == '\r' && data[newLine-2] == ',' {
+			data[newLine-2] = '}'
+		} else {
+			panic("unexpected signed manifest format")
+		}
+		newLine++
 
-	payload := data[:newLine]
-	log.Println(string(payload))
-	var signature struct {
-		Signature struct {
-			SignInfo struct {
-				SignatureMethod  string `json:"signatureMethod"`
-				DigestMethod     string `json:"digestMethod"`
-				DigestValue      []byte `json:"digestValue"`
-				Canonicalization string `json:"canonicalization"`
-			} `json:"signInfo"`
-			SignatureValue []byte `json:"signatureValue"`
-			KeyInfo        struct {
-				KeyValue struct {
-					RSAKeyValue struct {
-						Modulus  []byte `json:"modulus"`
-						Exponent []byte `json:"exponent"`
-					} `json:"rsaKeyValue"`
-				} `json:"keyValue"`
-				X509Data [1][]byte `json:"x509Data"`
-			} `json:"keyInfo"`
-		} `json:"signature"`
-	}
-	err := json.Unmarshal(append([]byte{'{'}, data[newLine:]...), &signature)
-	if err != nil {
-		panic(err)
-	}
+		payload := data[:newLine]
+		log.Println(string(payload))
+		var signature struct {
+			Signature struct {
+				SignInfo struct {
+					SignatureMethod  string `json:"signatureMethod"`
+					DigestMethod     string `json:"digestMethod"`
+					DigestValue      []byte `json:"digestValue"`
+					Canonicalization string `json:"canonicalization"`
+				} `json:"signInfo"`
+				SignatureValue []byte `json:"signatureValue"`
+				KeyInfo        struct {
+					KeyValue struct {
+						RSAKeyValue struct {
+							Modulus  []byte `json:"modulus"`
+							Exponent []byte `json:"exponent"`
+						} `json:"rsaKeyValue"`
+					} `json:"keyValue"`
+					X509Data [1][]byte `json:"x509Data"`
+				} `json:"keyInfo"`
+			} `json:"signature"`
+		}
+		err := json.Unmarshal(append([]byte{'{'}, data[newLine:]...), &signature)
+		if err != nil {
+			panic(err)
+		}
 
-	spew.Dump(sha1.Sum(payload))
-	spew.Dump(signature)
+		spew.Dump(sha1.Sum(payload))
+		spew.Dump(signature)
 
-	panic("TODO")
+		panic("TODO")
+	*/
 }

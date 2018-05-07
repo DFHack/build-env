@@ -25,17 +25,20 @@ RUN dpkg --add-architecture i386 \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
  && pip install sphinx \
- && mkdir -p /osxcross/tarballs /opt/cmake \
+ && mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \
  && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
  && curl -LSo gcc-4.8.5.tar.gz https://ftpmirror.gnu.org/gcc/gcc-4.8.5/gcc-4.8.5.tar.gz \
+ && curl -LSo ccache-3.4.2.tar.xz https://www.samba.org/ftp/ccache/ccache-3.4.2.tar.xz \
  && (echo "3aa8d3b53903563bdc13dfec80716c286b2228db36ef65c23bc616f9bb930367  cmake.tar.gz"; \
      echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
      echo "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce  MacOSX10.10.sdk.tar.xz"; \
-     echo "1dbc5cd94c9947fe5dffd298e569de7f44c3cedbd428fceea59490d336d8295a  gcc-4.8.5.tar.gz") | sha256sum -c \
+     echo "1dbc5cd94c9947fe5dffd298e569de7f44c3cedbd428fceea59490d336d8295a  gcc-4.8.5.tar.gz"; \
+     echo "18a8b14367d63d3d37fb6c33cba60e1b7fcd7a63d608df97c9771ae0d234fee2  ccache-3.4.2.tar.xz") | sha256sum -c \
  && tar xzCf /opt/cmake /osxcross/tarballs/cmake.tar.gz --strip-components=1 \
+ && tar xJCf /usr/src/ccache /osxcross/tarballs/ccache-3.4.2.tar.xz --strip-components=1 \
  && tar xzCf /osxcross /osxcross/tarballs/osxcross.tar.gz --strip-components=1 \
  && cd /osxcross \
  && patch -p1 < osxcross-patches.diff \
@@ -52,11 +55,13 @@ RUN dpkg --add-architecture i386 \
         libgmp-dev \
         libmpc-dev \
         libmpfr-dev \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        ccache \
  && rm -rf /var/lib/apt/lists/* \
  && ln -s /osxcross/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
  && ln -s /bin/true /osxcross/target/bin/install_name_tool \
+ && cd /usr/src/ccache \
+ && ./configure --prefix=/usr \
+ && make install \
+ && rm -rf /usr/src/ccache \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
@@ -78,6 +83,12 @@ RUN dpkg --add-architecture i386 \
        dfhack-native-bin/depends/protobuf \
  && rm -rf dfhack-native \
  && mv dfhack-native-bin dfhack-native
+
+RUN mkdir -p /usr/lib/ccache \
+ && ln -s ../../bin/ccache /usr/lib/ccache/g++-4.8 \
+ && ln -s ../../bin/ccache /usr/lib/ccache/gcc-4.8 \
+ && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
+ && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 

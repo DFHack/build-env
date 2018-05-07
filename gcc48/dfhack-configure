@@ -3,7 +3,7 @@
 usage()
 {
 	echo 'Usage: dfhack-configure [os] [bits] [mode] [cmake args...]' >&2
-	echo 'os: windows, linux, or macosx' >&2
+	echo 'os: linux or macosx' >&2
 	echo 'bits: 32 or 64' >&2
 	echo 'mode: Release or RelWithDebInfo' >&2
 }
@@ -21,10 +21,6 @@ shift 3
 args=
 
 case $os in
-windows)
-	echo 'Windows is not supported on the GCC 4.8 Docker image.' >&2
-	exit 1
-	;;
 linux)
 	args="$args -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8"
 	;;

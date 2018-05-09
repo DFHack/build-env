@@ -86,9 +86,9 @@ RUN dpkg --add-architecture i386 \
 
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++-4.8 \
- && ln -s ../../bin/ccache /usr/lib/ccache/gcc-4.8 \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
+ && ln -s ../../bin/ccache /usr/lib/ccache/gcc-4.8
+# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
+# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 

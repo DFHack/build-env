@@ -86,9 +86,9 @@ ADD dfhack-configure dfhack-make /usr/local/bin/
 
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++ \
- && ln -s ../../bin/ccache /usr/lib/ccache/gcc \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
- && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
+ && ln -s ../../bin/ccache /usr/lib/ccache/gcc
+# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
+# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
 
 USER buildmaster
 WORKDIR /home/buildmaster

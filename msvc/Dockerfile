@@ -1,48 +1,35 @@
-#FROM golang AS msvc-downloader
-#
-#ENV GOOS=windows GOARCH=amd64
-#
-#COPY download-msvc.go /go/src/github.com/BenLubar/build-env/download-msvc.go
-#
-#RUN cd /go/src/github.com/BenLubar/build-env \
-# && git init \
-# && git remote add origin https://github.com/BenLubar/build-env.git \
-# && go get -d -v . \
-# && go build -o /download-msvc.exe
-#
 FROM buildpack-deps:bionic
 
-RUN dpkg --add-architecture i386 \
+RUN curl -sSL https://repos.wine-staging.com/wine/Release.key | apt-key add - \
+ && dpkg --add-architecture i386 \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        wine-development \
-        wine32-development \
-        wine64-development \
-        winetricks \
+        software-properties-common \
+ && apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ artful main' \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+	cabextract \
+        winehq-staging \
         xvfb \
  && rm -rf /var/lib/apt/lists/* \
- && useradd --uid 1001 --create-home --shell /bin/bash buildmaster
+ && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
+ && curl -sSL https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -o /usr/local/bin/winetricks \
+ && chmod +x /usr/local/bin/winetricks
 
 USER buildmaster
 WORKDIR /home/buildmaster
 
+ENV WINEARCH=win32
+
+RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine wineboot && wineserver -w
+
 RUN LOGNAME=buildmaster WINEDEBUG=-all xvfb-run -a winetricks --unattended \
-        dotnet462 \
-        vcrun2017 \
+        dotnet45 \
+        vcrun2013 \
 	win10 \
  && rm -rf /home/buildmaster/.cache/winetricks
 
-#COPY --from=msvc-downloader /download-msvc.exe /home/buildmaster/download-msvc.exe
-#
-#RUN wine download-msvc.exe
-
-RUN wget -O vs_BuildTools.exe https://aka.ms/vs/15/release/vs_BuildTools.exe
-
-RUN wine vs_BuildTools.exe --passive --wait --norestart --nocache \
-	--installPath C:\\BuildTools \
-        --add Microsoft.VisualStudio.Workload.VCTools \
-        --add Microsoft.VisualStudio.Component.VC.140 \
-        --add Microsoft.VisualStudio.Component.WinXP
+ADD en_visual_studio_community_2015_with_update_3_x86_x64_web_installer_8922963.exe /home/buildmaster/
+RUN WINEDEBUG=+all,trace-all wine en_visual_studio_community_2015_with_update_3_x86_x64_web_installer_8922963.exe /CustomInstallPath C:\BuildTools /InstallSelectableItems "NativeLanguageSupport_VCV1;NativeLanguageSupport_XPV1;GitForWindowsx86V9" /Quiet /NoRestart
 
 RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v4.1.0/clcache-4.1.0.zip \
  && echo "3d41d98000e1edb705f2237204b943edd95afeb95a6f33c9ff87aa986471cce7  clcache.zip" | sha256sum -c \

@@ -1,0 +1,1 @@
+`en_visual_studio_community_2015_with_update_3_x86_x64_web_installer_8922963.exe` can be downloaded for free from <https://my.visualstudio.com/Downloads?q=Visual%20Studio%20Community%202015%20with%20Update%203>. There does not seem to be an automated way to do this.

@@ -82,13 +82,21 @@ RUN dpkg --add-architecture i386 \
  && rm -rf dfhack-native \
  && mv dfhack-native-bin dfhack-native
 
-ADD dfhack-configure dfhack-make /usr/local/bin/
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        libsdl1.2debian:amd64 \
+        libsdl1.2debian:i386 \
+ && rm -rf /var/lib/apt/lists/* \
+ && ln -s libSDL-1.2.so.0 /usr/lib/x86_64-linux-gnu/libSDL.so \
+ && ln -s libSDL-1.2.so.0 /usr/lib/i386-linux-gnu/libSDL.so
 
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache/gcc
 # && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
 # && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
+
+ADD dfhack-configure dfhack-make /usr/local/bin/
 
 USER buildmaster
 WORKDIR /home/buildmaster

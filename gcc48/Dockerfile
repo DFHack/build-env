@@ -20,8 +20,8 @@ RUN dpkg --add-architecture i386 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         mesa-common-dev \
-        python-pip \
         python-dev \
+        python-pip \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
  && pip install sphinx \
@@ -83,6 +83,14 @@ RUN dpkg --add-architecture i386 \
        dfhack-native-bin/depends/protobuf \
  && rm -rf dfhack-native \
  && mv dfhack-native-bin dfhack-native
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        libsdl1.2debian:amd64 \
+        libsdl1.2debian:i386 \
+ && rm -rf /var/lib/apt/lists/* \
+ && ln -s libSDL-1.2.so.0 /usr/lib/x86_64-linux-gnu/libSDL.so \
+ && ln -s libSDL-1.2.so.0 /usr/lib/i386-linux-gnu/libSDL.so
 
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++-4.8 \

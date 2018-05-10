@@ -22,6 +22,7 @@
 - OpenGL headers and libraries (required for Stonesense)
 - Sphinx (used to build DFHack documentation)
 - zlib for 32-bit and 64-bit Linux and Mac OS X
+- libSDL.so for 32-bit and 64-bit Linux
 
 ### Latest image
 
@@ -39,6 +40,7 @@
 - OpenGL headers and libraries (required for Stonesense)
 - Sphinx (used to build DFHack documentation)
 - zlib for 32-bit and 64-bit Linux and Mac OS X
+- libSDL.so for 32-bit and 64-bit Linux
 
 ## Special Thanks
 

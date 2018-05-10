@@ -10,6 +10,7 @@ RUN curl -sSL https://repos.wine-staging.com/wine/Release.key | apt-key add - \
 	cabextract \
         winehq-staging \
         xvfb \
+        zip \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && curl -sSL https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -o /usr/local/bin/winetricks \

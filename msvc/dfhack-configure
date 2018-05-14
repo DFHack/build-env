@@ -18,33 +18,13 @@ bits=$2
 mode=$3
 shift 3
 
-cmake-windows()
-{
-	WINEDEBUG=-all wine cmd /c cmake.exe "$@"
-	wineserver -w
-	echo '* replacing PDB types in Visual C++ projects' >&2
-	find -name '*.vcxproj' -exec sed -e 's#<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>#<DebugInformationFormat>OldStyle</DebugInformationFormat>#' -i {} \;
-}
-
-args=
+if [[ -z "$CCACHE_BASEDIR" ]] || [[ ! -d "$CCACHE_BASEDIR" ]]; then
+	echo "The environment variable CCACHE_BASEDIR should be set to the closest parent directory of the source and build directories." >&2
+	exit 2
+fi
 
 case $os in
 windows)
-	case $bits in
-	32)
-		args=' -G"Visual Studio 14"'
-		;;
-	64)
-		args=' -G"Visual Studio 14 Win64" -T v140_xp'
-		;;
-	*)
-		usage
-		exit 1
-		;;
-	esac
-
-	echo 'Windows is not yet supported (but hopefully it will be soon!)' >&2
-	exit 255
 	;;
 *)
 	usage
@@ -61,8 +41,20 @@ case $bits in
 	;;
 esac
 
+echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_DIR/clcache")'" > dfhack-clcache-env.sh
+echo "export CLCACHE_BASEDIR='$(winepath -w "$CCACHE_BASEDIR")'" >> dfhack-clcache-env.sh
+if [[ ! -z "$CCACHE_READONLY" ]]; then
+	# see https://github.com/frerich/clcache/issues/313
+	echo "export CLCACHE_DISABLE=1" >> dfhack-clcache-env.sh
+fi
+cat "/home/buildmaster/vcvars_$bits.bash" >> dfhack-clcache-env.sh
+
 case $mode in
-Release|RelWithDebInfo)
+Release)
+	;;
+RelWithDebInfo)
+	echo "* forcing build mode to Release" >&2
+	mode=Release
 	;;
 *)
 	usage
@@ -70,6 +62,10 @@ Release|RelWithDebInfo)
 	;;
 esac
 
-args=" -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode $args"
+args=" -DCMAKE_TOOLCHAIN_FILE=/home/buildmaster/toolchain.cmake -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_LINKER=/usr/local/bin/link -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native $args"
 
-exec cmake-windows $args "$@" <&1
+. dfhack-clcache-env.sh
+
+cmake $args "$@" <&1
+
+wineserver -w

@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+declare -a args
+
+while (( "$#" )); do
+	arg="$(perl -pe 's#(?<!\.dir)/home/buildmaster#Z:/home/buildmaster#g' <<<"$1" | perl -pe 's#(?<!\.dir)/opt/cmake#Z:/opt/cmake#g')"
+	args+=("$arg")
+	shift
+done
+
+#echo '[DFHack debug] rewrote command to '"$(basename "$0")"'.exe '"${args[*]}"
+
+wine "$(basename "$0")" "${args[@]}" <&1
+
+wineserver -w

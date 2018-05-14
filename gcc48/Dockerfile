@@ -20,11 +20,11 @@ RUN dpkg --add-architecture i386 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         mesa-common-dev \
-        python-dev \
-        python-pip \
+        python3-dev \
+        python3-pip \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
- && pip install sphinx \
+ && pip3 install sphinx \
  && mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \
  && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \

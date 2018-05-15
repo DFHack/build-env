@@ -41,12 +41,14 @@ case $bits in
 	;;
 esac
 
-echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_DIR/clcache")'" > dfhack-clcache-env.sh
-echo "export CLCACHE_BASEDIR='$(winepath -w "$CCACHE_BASEDIR")'" >> dfhack-clcache-env.sh
 if [[ ! -z "$CCACHE_READONLY" ]]; then
 	# see https://github.com/frerich/clcache/issues/313
-	echo "export CLCACHE_DISABLE=1" >> dfhack-clcache-env.sh
+	cp -R "$CCACHE_DIR/clcache" "$CCACHE_TEMPDIR/clcache"
+	echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_TEMPDIR/clcache")'" > dfhack-clcache-env.sh
+else
+	echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_DIR/clcache")'" > dfhack-clcache-env.sh
 fi
+echo "export CLCACHE_BASEDIR='$(winepath -w "$CCACHE_BASEDIR")'" >> dfhack-clcache-env.sh
 cat "/home/buildmaster/vcvars_$bits.bash" >> dfhack-clcache-env.sh
 
 case $mode in

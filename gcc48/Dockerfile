@@ -24,7 +24,7 @@ RUN dpkg --add-architecture i386 \
         python3-pip \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
- && pip3 install sphinx \
+ && pip3 install --compile sphinx 'requests>=2.4.1' \
  && mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \
  && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \

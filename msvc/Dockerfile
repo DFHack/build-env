@@ -88,3 +88,7 @@ ADD toolchain.cmake vcvars_32.bash vcvars_64.bash /home/buildmaster/
 
 ENV WINEDEBUG=-all \
     WINEPATH=C:\\clcache
+
+# Kill mscorsvw so it doesn't cause builds to hang.
+#RUN wine C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\ngen.exe executequeueditems
+ENV WINEDLLOVERRIDES='ngen.exe,mscorsvw.exe=b'

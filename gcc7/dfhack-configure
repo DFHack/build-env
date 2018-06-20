@@ -24,7 +24,7 @@ case $os in
 linux)
 	;;
 macosx)
-	args="$args -DCMAKE_SYSTEM_NAME=Darwin -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native -DCMAKE_C_COMPILER=x86_64-apple-darwin14-gcc -DCMAKE_CXX_COMPILER=x86_64-apple-darwin14-g++ -DCMAKE_FIND_ROOT_PATH=/osxcross/target/macports/pkgs/opt/local -DCMAKE_OSX_SYSROOT=/osxcross/target/SDK/MacOSX10.10.sdk"
+	args="$args -DCMAKE_SYSTEM_NAME=Darwin -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native -DCMAKE_C_COMPILER=/usr/lib/ccache-osx/x86_64-apple-darwin14-gcc -DCMAKE_CXX_COMPILER=/usr/lib/ccache-osx/x86_64-apple-darwin14-g++ -DCMAKE_FIND_ROOT_PATH=/osxcross/target/macports/pkgs/opt/local -DCMAKE_OSX_SYSROOT=/osxcross/target/SDK/MacOSX10.10.sdk"
 	;;
 *)
 	usage

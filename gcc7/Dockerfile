@@ -93,8 +93,11 @@ RUN apt-get update \
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache/gcc
-# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-g++ \
-# && ln -s ../../bin/ccache /usr/lib/ccache/x86_64-apple-darwin14-gcc
+
+# Not in $PATH to avoid confusing build failures
+RUN mkdir -p /usr/lib/ccache-osx \
+ && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-g++ \
+ && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-gcc
 
 ADD dfhack-configure dfhack-make /usr/local/bin/
 

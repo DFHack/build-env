@@ -2,8 +2,7 @@
 
 ## Known issues
 
-- ccache is disabled for Mac OS X cross compilation until I can figure out what's causing it to break.
-- Debug builds are broken on the MSVC image. Release builds work properly.
+- Debug builds are broken on the MSVC image. Release builds work properly. The `dfhack-configure` script automatically overrides RelWithDebInfo to Release.
 
 ## Contents
 

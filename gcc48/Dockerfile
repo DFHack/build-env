@@ -4,7 +4,7 @@ ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime \
     GCC_VERSION=4.8.5 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
-    PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH
+    PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:/root/lua53/bin:$PATH
 
 ADD osxcross-patches.diff /osxcross/osxcross-patches.diff
 
@@ -22,6 +22,8 @@ RUN dpkg --add-architecture i386 \
         mesa-common-dev \
         python3-dev \
         python3-pip \
+        ruby \
+        xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
  && pip3 install --compile sphinx 'requests>=2.4.1' \
@@ -74,6 +76,9 @@ RUN dpkg --add-architecture i386 \
         -DBUILD_SUPPORTED=OFF \
         -DDOWNLOAD_RUBY=OFF \
  && make -j$(nproc) protoc-bin \
+ && bash -e dfhack/travis/build-lua.sh \
+ && chmod a+rx /root /root/lua53/bin/* \
+ && chmod -R a+rX /root/lua53 \
  && cd .. \
  && mkdir -p dfhack-native-bin/depends/protobuf \
  && mv dfhack-native/ImportExecutables.cmake dfhack-native-bin \
@@ -101,7 +106,7 @@ RUN mkdir -p /usr/lib/ccache-osx \
  && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-gcc
 
-ADD dfhack-configure dfhack-make /usr/local/bin/
+ADD dfhack-configure dfhack-make dfhack-test /usr/local/bin/
 
 USER buildmaster
 WORKDIR /home/buildmaster

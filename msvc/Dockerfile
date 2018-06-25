@@ -1,12 +1,3 @@
-FROM buildpack-deps:bionic AS wine_vcpp
-
-# Based on https://github.com/eruffaldi/wine_vcpp
-ADD ["Microsoft Visual Studio 14.0/VC","/home/buildmaster/wine_vcpp/VC"]
-ADD ["Windows Kits/8.1","/home/buildmaster/wine_vcpp/kit8.1"]
-ADD ["Windows Kits/10","/home/buildmaster/wine_vcpp/kit10"]
-ADD ["Microsoft Visual Studio 14.0/Common7/Tools","/home/buildmaster/wine_vcpp/tools"]
-#RUN find /home/buildmaster/wine_vcpp -type d -\( -name 'arm' -o -name 'arm64' -o -name 'amd64' -o -name 'amd64_arm' -o -name 'amd64_x86' -o -name 'x86_arm' -\) -exec rm -rf {} +
-
 FROM buildpack-deps:bionic
 
 RUN dpkg --add-architecture i386 \
@@ -14,7 +5,9 @@ RUN dpkg --add-architecture i386 \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libxml-libxml-perl \
         libxml-libxslt-perl \
+        lua5.3 \
         python3-sphinx \
+        ruby \
         wine32 \
         winetricks \
         xvfb \
@@ -32,7 +25,8 @@ USER buildmaster
 WORKDIR /home/buildmaster
 
 ENV PATH=/opt/cmake/bin:$PATH \
-    WINEARCH=win32
+    WINEARCH=win32 \
+    WINEDLLOVERRIDES='ngen.exe,mscorsvw.exe=b'
 
 # Get rid of the "install mono?" and "install gecko?" prompts.
 RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine wineboot && wineserver -w
@@ -73,12 +67,16 @@ RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v
  && rm -f clcache.zip
 
 # Set up wine_vcpp
-COPY --from=wine_vcpp /home/buildmaster/wine_vcpp /home/buildmaster/wine_vcpp
+# Based on https://github.com/eruffaldi/wine_vcpp
+ADD ["Microsoft Visual Studio 14.0/VC","/home/buildmaster/wine_vcpp/VC"]
+ADD ["Windows Kits/8.1","/home/buildmaster/wine_vcpp/kit8.1"]
+ADD ["Windows Kits/10","/home/buildmaster/wine_vcpp/kit10"]
+ADD ["Microsoft Visual Studio 14.0/Common7/Tools","/home/buildmaster/wine_vcpp/tools"]
 RUN ln -s /home/buildmaster/wine_vcpp /home/buildmaster/.wine/drive_c/VC
 
 # Add DFHack scripts.
 USER root
-ADD dfhack-configure dfhack-make wrapper /usr/local/bin/
+ADD dfhack-configure dfhack-make dfhack-test wrapper /usr/local/bin/
 RUN ln -s wrapper /usr/local/bin/clcache \
  && ln -s wrapper /usr/local/bin/link \
  && ln -s wrapper /usr/local/bin/mt \
@@ -88,7 +86,3 @@ ADD toolchain.cmake vcvars_32.bash vcvars_64.bash /home/buildmaster/
 
 ENV WINEDEBUG=-all \
     WINEPATH=C:\\clcache
-
-# Kill mscorsvw so it doesn't cause builds to hang.
-#RUN wine C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\ngen.exe executequeueditems
-ENV WINEDLLOVERRIDES='ngen.exe,mscorsvw.exe=b'

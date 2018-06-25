@@ -19,8 +19,11 @@ RUN dpkg --add-architecture i386 \
         libmpfr-dev \
         libxml-libxml-perl \
         libxml-libxslt-perl \
+        lua5.3 \
         mesa-common-dev \
         python3-sphinx \
+        ruby \
+        xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
  && mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
@@ -99,7 +102,7 @@ RUN mkdir -p /usr/lib/ccache-osx \
  && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache-osx/x86_64-apple-darwin14-gcc
 
-ADD dfhack-configure dfhack-make /usr/local/bin/
+ADD dfhack-configure dfhack-make dfhack-test /usr/local/bin/
 
 USER buildmaster
 WORKDIR /home/buildmaster

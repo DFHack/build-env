@@ -1,0 +1,85 @@
+#!/bin/bash -e
+
+usage()
+{
+	echo 'Usage: dfhack-test [os] [bits] [src] [command]' >&2
+	echo 'os: linux or macosx' >&2
+	echo 'bits: 32 or 64' >&2
+	echo 'src: path to root DFHack source directory' >&2
+	echo 'command: DFHack command to use as the test runner; for example, test/main' >&2
+	echo '(run inside the DF folder)' >&2
+}
+
+if [[ $# -ne 4 ]]; then
+	usage
+	exit 1
+fi
+
+os=$1
+bits=$2
+src=$3
+script=$4
+bin=$(pwd)
+shift 4
+
+if [[ "$os" != "linux" ]] || [[ "$bits" != "64" ]]; then
+	echo '[temporary] Skipping tests for all platforms other than 64-bit Linux.'
+	exit 0
+fi
+
+mv "$bin/dfhack.init-example" "$bin/dfhack.init"
+cat > "$bin/dfhack_buildmaster.init" <<EOF
+:lua dfhack.internal.addScriptPath(os.getenv('DFHACK_SRC'))
+$script
+EOF
+
+had_error=0
+
+pushd "$src"
+export DF_FOLDER="$bin"
+export DFHACK_SRC="$(pwd)"
+echo 'Running default DFHack checks...'
+python travis/lint.py || {echo lint.py failed with code $? >&2; had_error=1}
+python travis/script-docs.py || {echo script-docs.py failed with code $? >&2; had_error=1}
+python travis/script-syntax.py --ext=lua --cmd="luac5.3 -p" || {echo script-syntax.py for lua faied with code $? >&2; had_error=1}
+python travis/script-syntax.py --ext=rb --cmd="ruby -c" || {echo script-syntax.py for ruby failed with code $? >&2; had_error=1}
+
+get_test_stage()
+{
+	if [[ -f test_stage.txt ]]; then
+		cat test_stage.txt
+	else
+		echo 0
+	fi
+}
+
+run_tests()
+{
+	cd "$DF_FOLDER"
+	rm -f test_stage.txt
+
+	max_tries=5
+
+	for (( tries=1; ; tries++ )) do
+		stage="$(get_test_stage)"
+		echo "Run #$tries: stage=%stage"
+
+		if [[ "$stage" == done ]]; then
+			echo Done\!
+			rm -f test_stage.txt
+			return 0
+		fi
+
+		if [[ $retries -gt $max_tries ]]; then
+			echo Too many tries - aborting >&2
+			return 1
+		fi
+
+		DFHACK_HEADLESS=1 xvfb-run timeout --perserve-status -k 130s 120s -v ./dfhack || echo DFHack exited with code $? >&2
+	done
+}
+
+run_tests || {echo run_tests failed with code $? >&2; had_error=1}
+popd
+
+exit $had_error

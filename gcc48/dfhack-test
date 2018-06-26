@@ -39,10 +39,10 @@ pushd "$src"
 export DF_FOLDER="$bin"
 export DFHACK_SRC="$(pwd)"
 echo 'Running default DFHack checks...'
-python travis/lint.py || {echo lint.py failed with code $? >&2; had_error=1}
-python travis/script-docs.py || {echo script-docs.py failed with code $? >&2; had_error=1}
-python travis/script-syntax.py --ext=lua --cmd="luac5.3 -p" || {echo script-syntax.py for lua faied with code $? >&2; had_error=1}
-python travis/script-syntax.py --ext=rb --cmd="ruby -c" || {echo script-syntax.py for ruby failed with code $? >&2; had_error=1}
+python travis/lint.py || { echo lint.py failed with code $? >&2; had_error=1; }
+python travis/script-docs.py || { echo script-docs.py failed with code $? >&2; had_error=1; }
+python travis/script-syntax.py --ext=lua --cmd="luac5.3 -p" || { echo script-syntax.py for lua faied with code $? >&2; had_error=1; }
+python travis/script-syntax.py --ext=rb --cmd="ruby -c" || { echo script-syntax.py for ruby failed with code $? >&2; had_error=1; }
 
 get_test_stage()
 {
@@ -62,7 +62,7 @@ run_tests()
 
 	for (( tries=1; ; tries++ )) do
 		stage="$(get_test_stage)"
-		echo "Run #$tries: stage=%stage"
+		echo "Run #$tries: stage=$stage"
 
 		if [[ "$stage" == done ]]; then
 			echo Done\!
@@ -70,16 +70,16 @@ run_tests()
 			return 0
 		fi
 
-		if [[ $retries -gt $max_tries ]]; then
+		if [[ $tries -gt $max_tries ]]; then
 			echo Too many tries - aborting >&2
 			return 1
 		fi
 
-		DFHACK_HEADLESS=1 xvfb-run timeout --perserve-status -k 130s 120s -v ./dfhack || echo DFHack exited with code $? >&2
+		DFHACK_HEADLESS=1 xvfb-run timeout --preserve-status -k 130s 120s ./dfhack || echo DFHack exited with code $? >&2
 	done
 }
 
-run_tests || {echo run_tests failed with code $? >&2; had_error=1}
+run_tests || { echo run_tests failed with code $? >&2; had_error=1; }
 popd
 
 exit $had_error

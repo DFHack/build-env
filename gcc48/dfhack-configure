@@ -51,6 +51,10 @@ Release|RelWithDebInfo)
 	;;
 esac
 
+if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
+	args="-G Ninja $args"
+fi
+
 args=" -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode $args"
 
 exec cmake $args "$@" <&1

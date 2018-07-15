@@ -4,7 +4,7 @@ ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime \
     GCC_VERSION=4.8.5 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
-    PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:/root/lua53/bin:$PATH
+    PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH
 
 ADD osxcross-patches.diff /osxcross/osxcross-patches.diff
 
@@ -25,21 +25,25 @@ RUN dpkg --add-architecture i386 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         mesa-common-dev \
+        ninja-build \
         python3-dev \
         python3-pip \
         ruby \
         xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
- && pip3 install --compile sphinx 'requests>=2.4.1' \
- && mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --compile sphinx 'requests>=2.4.1'
+
+RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \
- && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \
+ && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
  && curl -LSo gcc-4.8.5.tar.gz https://ftpmirror.gnu.org/gcc/gcc-4.8.5/gcc-4.8.5.tar.gz \
  && curl -LSo ccache-3.4.2.tar.xz https://www.samba.org/ftp/ccache/ccache-3.4.2.tar.xz \
- && (echo "3aa8d3b53903563bdc13dfec80716c286b2228db36ef65c23bc616f9bb930367  cmake.tar.gz"; \
+ && (echo "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435  cmake.tar.gz"; \
      echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
      echo "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce  MacOSX10.10.sdk.tar.xz"; \
      echo "1dbc5cd94c9947fe5dffd298e569de7f44c3cedbd428fceea59490d336d8295a  gcc-4.8.5.tar.gz"; \
@@ -47,44 +51,56 @@ RUN dpkg --add-architecture i386 \
  && tar xzCf /opt/cmake /osxcross/tarballs/cmake.tar.gz --strip-components=1 \
  && tar xJCf /usr/src/ccache /osxcross/tarballs/ccache-3.4.2.tar.xz --strip-components=1 \
  && tar xzCf /osxcross /osxcross/tarballs/osxcross.tar.gz --strip-components=1 \
- && cd /osxcross \
+ && rm -f /osxcross/tarballs/cmake.tar.gz /osxcross/tarballs/ccache-3.4.2.tar.xz /osxcross/tarballs/osxcross.tar.gz
+
+RUN cd /osxcross \
  && patch -p1 < osxcross-patches.diff \
- && UNATTENDED=1 ./build.sh \
- && UNATTENDED=1 ./build_gcc.sh \
- && UNATTENDED=1 ./build_llvm_dsymutil.sh \
- && UNATTENDED=1 ./tools/osxcross-macports install zlib \
- && mv /osxcross/target /osxcross-target \
+ && UNATTENDED=1 ./build.sh
+RUN cd /osxcross \
+ && UNATTENDED=1 ./build_gcc.sh
+RUN cd /osxcross \
+ && UNATTENDED=1 ./build_llvm_dsymutil.sh
+RUN cd /osxcross \
+ && UNATTENDED=1 ./tools/osxcross-macports install zlib
+
+RUN mv /osxcross/target /osxcross-target \
  && rm -rf /osxcross \
  && mkdir /osxcross \
- && mv /osxcross-target /osxcross/target \
+ && mv /osxcross-target /osxcross/target
+
+RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove \
         clang \
         libgmp-dev \
         libmpc-dev \
         libmpfr-dev \
- && rm -rf /var/lib/apt/lists/* \
- && ln -s /osxcross/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
- && ln -s /bin/true /osxcross/target/bin/install_name_tool \
- && cd /usr/src/ccache \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /osxcross/target/macports/pkgs/opt/local/lib/libz.dylib /usr/lib/libz.dylib \
+ && ln -s /bin/true /osxcross/target/bin/install_name_tool
+
+RUN cd /usr/src/ccache \
  && ./configure --prefix=/usr \
  && make install \
- && rm -rf /usr/src/ccache \
- && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
+ && rm -rf /usr/src/ccache
+
+RUN useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
  && git clone --depth=1 --recursive https://github.com/DFHack/dfhack.git \
  && cmake dfhack \
+        -G Ninja \
         -DDFHACK_BUILD_ARCH=64 \
         -DBUILD_LIBRARY=OFF \
         -DBUILD_PLUGINS=OFF \
         -DBUILD_RUBY=OFF \
         -DBUILD_SUPPORTED=OFF \
         -DDOWNLOAD_RUBY=OFF \
- && make -j$(nproc) protoc-bin \
+ && ninja protoc-bin \
  && bash -e dfhack/travis/build-lua.sh \
  && chmod a+rx /root /root/lua53/bin/* \
  && chmod -R a+rX /root/lua53 \
- && cd .. \
+ && cd /home/buildmaster \
  && mkdir -p dfhack-native-bin/depends/protobuf \
  && mv dfhack-native/ImportExecutables.cmake dfhack-native-bin \
  && mv dfhack-native/depends/protobuf/libprotobuf.so \

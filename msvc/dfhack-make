@@ -6,6 +6,10 @@ while [[ ! -f "$dir/dfhack-clcache-env.sh" ]] && [[ "$dir" != "/" ]]; do
 done
 . "$dir/dfhack-clcache-env.sh"
 
-make -j$(nproc) "$@" <&1
+if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
+	ninja "$@" <&1
+else
+	make -j$(nproc) "$@" <&1
+fi
 
 wineserver -w

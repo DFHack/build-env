@@ -6,6 +6,7 @@ RUN dpkg --add-architecture i386 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         lua5.3 \
+        ninja-build \
         python3-sphinx \
         ruby \
         wine32 \
@@ -15,8 +16,8 @@ RUN dpkg --add-architecture i386 \
  && useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && mkdir -p /opt/cmake \
  && cd /opt \
- && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz \
- && echo "3aa8d3b53903563bdc13dfec80716c286b2228db36ef65c23bc616f9bb930367  cmake.tar.gz" | sha256sum -c \
+ && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz \
+ && echo "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435  cmake.tar.gz" | sha256sum -c \
  && tar xzCf /opt/cmake /opt/cmake.tar.gz --strip-components=1 \
  && sed -e 's#/Zi#/Z7#g' -i /opt/cmake/share/cmake-3.11/Modules/Platform/Windows-MSVC.cmake \
  && rm -f /opt/cmake.tar.gz

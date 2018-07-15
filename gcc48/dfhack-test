@@ -24,10 +24,10 @@ if [[ "$os" != "linux" ]] || [[ "$bits" != "64" ]]; then
 	exit 0
 fi
 
-mv "dfhack.init-example" "dfhack.init"
-cat > "dfhack_buildmaster.init" <<EOF
-$script
-EOF
+sed -e 's/\[SOUND:YES\]/[SOUND:NO]/' -i data/init/init.txt
+sed -e 's/\[INTRO:YES\]/[INTRO:NO]/' -i data/init/init.txt
+sed -e 's/\[PRINT_MODE:[A-Z0-9]\+\]/[PRINT_MODE:TEXT]/' -i data/init/init.txt
+echo "$script" > dfhack.init
 
 had_error=0
 
@@ -61,7 +61,7 @@ run_tests()
 			return 1
 		fi
 
-		DFHACK_HEADLESS=1 xvfb-run timeout --preserve-status -k 130s 120s ./dfhack || echo DFHack exited with code $? >&2
+		DFHACK_HEADLESS=1 TERM=xterm script -qfe -c 'xvfb-run timeout --preserve-status -k 130s 120s ./dfhack' /dev/null |& sed -e 's/\r//g' || echo DFHack exited with code $? >&2
 	done
 }
 

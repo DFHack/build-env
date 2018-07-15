@@ -14,9 +14,14 @@ RUN dpkg --add-architecture i386 \
         clang \
         g++-multilib \
         gcc-multilib \
+        libglu1-mesa \
         libgmp-dev \
+        libgtk2.0-0 \
         libmpc-dev \
         libmpfr-dev \
+        libopenal1 \
+        libsdl-image1.2 \
+        libsdl-ttf2.0-0 \
         libxml-libxml-perl \
         libxml-libxslt-perl \
         lua5.3 \

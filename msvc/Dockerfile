@@ -77,6 +77,20 @@ RUN ln -s /home/buildmaster/wine_vcpp /home/buildmaster/.wine/drive_c/VC
 
 # Add DFHack scripts.
 USER root
+
+RUN cd /root \
+ && curl -LSo embed-resource.tar.gz https://github.com/CogentEmbedded/embed-resource/archive/b9b04474f76c8bc4b28260e6225845fc56e39a5d.tar.gz \
+ && echo "489824c1d1d977fb0e2b116f7648dde9c5370c188dbf95b733c5c56677d7304b  embed-resource.tar.gz" | sha256sum -c \
+ && tar xf embed-resource.tar.gz \
+ && rm -f embed-resource.tar.gz \
+ && mv embed-resource-b9b04474f76c8bc4b28260e6225845fc56e39a5d embed-resource \
+ && cd embed-resource \
+ && cmake -G Ninja -Wno-dev . \
+ && ninja embed-resource \
+ && mv embed-resource /usr/local/bin \
+ && cd .. \
+ && rm -rf embed-resource
+
 ADD dfhack-configure dfhack-make dfhack-test wrapper /usr/local/bin/
 RUN ln -s wrapper /usr/local/bin/clcache \
  && ln -s wrapper /usr/local/bin/link \

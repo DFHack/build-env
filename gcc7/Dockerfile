@@ -116,6 +116,19 @@ RUN apt-get update \
  && ln -s libSDL-1.2.so.0 /usr/lib/x86_64-linux-gnu/libSDL.so \
  && ln -s libSDL-1.2.so.0 /usr/lib/i386-linux-gnu/libSDL.so
 
+RUN cd /root \
+ && curl -LSo embed-resource.tar.gz https://github.com/CogentEmbedded/embed-resource/archive/b9b04474f76c8bc4b28260e6225845fc56e39a5d.tar.gz \
+ && echo "489824c1d1d977fb0e2b116f7648dde9c5370c188dbf95b733c5c56677d7304b  embed-resource.tar.gz" | sha256sum -c \
+ && tar xf embed-resource.tar.gz \
+ && rm -f embed-resource.tar.gz \
+ && mv embed-resource-b9b04474f76c8bc4b28260e6225845fc56e39a5d embed-resource \
+ && cd embed-resource \
+ && cmake -G Ninja -Wno-dev . \
+ && ninja embed-resource \
+ && mv embed-resource /usr/local/bin \
+ && cd .. \
+ && rm -rf embed-resource
+
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache/gcc

@@ -75,10 +75,6 @@ ADD ["Windows Kits/10","/home/buildmaster/wine_vcpp/kit10"]
 ADD ["Microsoft Visual Studio 14.0/Common7/Tools","/home/buildmaster/wine_vcpp/tools"]
 RUN ln -s /home/buildmaster/wine_vcpp /home/buildmaster/.wine/drive_c/VC
 
-# Generate native images now rather than later.
-RUN WINEDLLOVERRIDES= wine C:\\windows\\Microsoft.NET\\Framework\\v4.0.30319\\ngen eqi \
- && WINEDLLOVERRIDES= wineserver -w
-
 # Add DFHack scripts.
 USER root
 

@@ -1,11 +1,17 @@
+FROM golang:latest as gobuilder
+
+RUN go get -d github.com/BenLubar/git-last-modified \
+ && go build -o /git-last-modified github.com/BenLubar/git-last-modified
+
 FROM buildpack-deps:bionic
 
-ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime \
+ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime \
     GCC_VERSION=7.3.0 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
     PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH
 
+COPY --from=gobuilder /git-last-modified /usr/bin/
 ADD osxcross-patches.diff /osxcross/osxcross-patches.diff
 
 RUN dpkg --add-architecture i386 \

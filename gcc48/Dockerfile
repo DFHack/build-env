@@ -1,6 +1,6 @@
 FROM buildpack-deps:trusty
 
-ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime,include_file_mtime \
+ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime \
     GCC_VERSION=4.8.5 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \

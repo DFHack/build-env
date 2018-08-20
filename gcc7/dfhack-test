@@ -62,7 +62,11 @@ run_tests()
 			return 1
 		fi
 
-		DFHACK_HEADLESS=1 TERM=xterm script -efq -c 'xvfb-run -a timeout --foreground --preserve-status -k 130s 120s ./dfhack' > >(while read -r line; do echo "${line//$'\r'}"; done) 2> >(while read -r line; do echo "${line//$'\r'}" >&2; done) || echo DFHack exited with code $? >&2
+		DFHACK_HEADLESS=1 TERM=dumb script -efq -c 'xvfb-run -a timeout --foreground --preserve-status -k 130s 120s ./dfhack' > >(perl -pe 's/\r//g and s/\x1b\[[0-9;]+m//g')
+		dfhack_exit_code=$?
+		if [[ $dfhack_exit_code -ne $(( 666 % 256 )) ]]; then
+			echo DFHack exited with code $dfhack_exit_code >&2
+		fi
 	done
 }
 

@@ -28,6 +28,7 @@ sed -e 's/\[SOUND:YES\]/[SOUND:NO]/' -i data/init/init.txt
 sed -e 's/\[INTRO:YES\]/[INTRO:NO]/' -i data/init/init.txt
 sed -e 's/\[PRINT_MODE:[A-Z0-9]\+\]/[PRINT_MODE:TEXT]/' -i data/init/init.txt
 echo "$script" > dfhack.init
+rm -f libs/libstdc++.so.6 # silence a warning when this gets deleted by DFHack
 
 had_error=0
 
@@ -61,7 +62,13 @@ run_tests()
 			return 1
 		fi
 
-		DFHACK_HEADLESS=1 TERM=xterm script -qfe -c 'xvfb-run timeout --preserve-status -k 130s 120s ./dfhack' /dev/null |& sed -e 's/\r//g' || echo DFHack exited with code $? >&2
+		DFHACK_HEADLESS=1 TERM=dumb script -efq -c 'xvfb-run -a timeout --foreground --preserve-status -k 130s 120s ./dfhack'
+		dfhack_exit_code=$?
+		if [[ $dfhack_exit_code -ne $(( 666 % 256 )) ]]; then
+			echo DFHack exited with code $dfhack_exit_code >&2
+		fi
+	done | while read -r line; do
+		perl -pe 's/\r//g and s/\x1b\[[0-9;]+m//g' <<<"$line"
 	done
 }
 

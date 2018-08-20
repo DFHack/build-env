@@ -2,25 +2,22 @@
 
 usage()
 {
-	echo 'Usage: dfhack-test [os] [bits] [src] [command]' >&2
+	echo 'Usage: dfhack-test [os] [bits] [command]' >&2
 	echo 'os: windows' >&2
 	echo 'bits: 32 or 64' >&2
-	echo 'src: path to root DFHack source directory' >&2
 	echo 'command: DFHack command to use as the test runner; for example, test/main' >&2
 	echo '(run inside the DF folder)' >&2
 }
 
-if [[ $# -ne 4 ]]; then
+if [[ $# -ne 3 ]]; then
 	usage
 	exit 1
 fi
 
 os=$1
 bits=$2
-src=$3
-script=$4
-bin=$(pwd)
-shift 4
+script=$3
+shift 3
 
 echo '[temporary] Skipping tests for all platforms other than 64-bit Linux.'
 exit 0

@@ -42,8 +42,9 @@ case $bits in
 esac
 
 if [[ ! -z "$CCACHE_READONLY" ]]; then
-	# see https://github.com/frerich/clcache/issues/313
-	cp -R "$CCACHE_DIR/clcache" "$CCACHE_TEMPDIR/clcache"
+	# Not worth copying all this stuff just for a single build.
+	# # see https://github.com/frerich/clcache/issues/313
+	# cp -R "$CCACHE_DIR/clcache" "$CCACHE_TEMPDIR/clcache"
 	echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_TEMPDIR/clcache")'" > dfhack-clcache-env.sh
 else
 	echo "export CLCACHE_DIR='$(winepath -w "$CCACHE_DIR/clcache")'" > dfhack-clcache-env.sh

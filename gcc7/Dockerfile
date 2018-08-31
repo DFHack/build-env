@@ -67,13 +67,6 @@ RUN cd /osxcross \
 RUN cd /osxcross \
  && UNATTENDED=1 ./tools/osxcross-macports install zlib
 
-RUN find /osxcross/target -name '*.dylib' -exec dsymutil --flat {} +
-
-RUN mv /osxcross/target /osxcross-target \
- && rm -rf /osxcross \
- && mkdir /osxcross \
- && mv /osxcross-target /osxcross/target
-
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove \
         clang \

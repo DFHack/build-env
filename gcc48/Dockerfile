@@ -34,7 +34,7 @@ RUN dpkg --add-architecture i386 \
         zlib1g-dev:i386 \
  && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --compile sphinx 'requests>=2.4.1'
+RUN pip3 install --compile 'sphinx<2.0' 'requests>=2.4.1'
 
 RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \

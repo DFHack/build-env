@@ -6,7 +6,7 @@ RUN go get -d github.com/BenLubar/git-last-modified \
 FROM buildpack-deps:bionic
 
 ENV CCACHE_SLOPPINESS=file_macro,include_file_ctime \
-    GCC_VERSION=7.3.0 \
+    GCC_VERSION=7.4.0 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
     PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH
@@ -45,12 +45,12 @@ RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && curl -LSo cmake.tar.gz https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
- && curl -LSo gcc-7.3.0.tar.gz https://ftpmirror.gnu.org/gcc/gcc-7.3.0/gcc-7.3.0.tar.gz \
+ && curl -LSo gcc-7.4.0.tar.gz https://ftpmirror.gnu.org/gcc/gcc-7.4.0/gcc-7.4.0.tar.gz \
  && curl -LSo ccache-3.4.2.tar.xz https://www.samba.org/ftp/ccache/ccache-3.4.2.tar.xz \
  && (echo "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435  cmake.tar.gz"; \
      echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
      echo "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce  MacOSX10.10.sdk.tar.xz"; \
-     echo "fa06e455ca198ddc11ea4ddf2a394cf7cfb66aa7e0ab98cc1184189f1d405870  gcc-7.3.0.tar.gz"; \
+     echo "cb8df68237b0bea3307217697ad749a0a0565584da259e8a944ef6cfc4dc4d3d  gcc-7.4.0.tar.gz"; \
      echo "18a8b14367d63d3d37fb6c33cba60e1b7fcd7a63d608df97c9771ae0d234fee2  ccache-3.4.2.tar.xz") | sha256sum -c \
  && tar xzCf /opt/cmake /osxcross/tarballs/cmake.tar.gz --strip-components=1 \
  && tar xJCf /usr/src/ccache /osxcross/tarballs/ccache-3.4.2.tar.xz --strip-components=1 \

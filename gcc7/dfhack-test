@@ -68,7 +68,12 @@ run_tests()
 			echo DFHack exited with code $dfhack_exit_code >&2
 		fi
 	done | while read -r line; do
-		perl -pe 's/\r//g and s/\x1b\[[0-9;]+m//g' <<<"$line"
+		fd=1
+		# lines containing light red text go to stderr
+		if [[ "$line" == *$'\x1b[01;31m'* ]]; then
+			fd=2
+		fi
+		perl -pe 's/\r//g and s/\x1b\[[0-9;]+m//g' <<<"$line" >&$fd
 	done
 }
 

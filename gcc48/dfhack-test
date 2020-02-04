@@ -64,8 +64,12 @@ run_tests()
 
 		DFHACK_HEADLESS=1 DFHACK_DISABLE_CONSOLE=1 TERM=dumb script -efq -c 'xvfb-run -a timeout --foreground --preserve-status -k 310s 300s ./dfhack > /dev/null 2>&1'
 		dfhack_exit_code=$?
-		if [[ $dfhack_exit_code -ne $(( 666 % 256 )) ]]; then
-			echo DFHack exited with code $dfhack_exit_code >&2
+		if [[ $dfhack_exit_code -eq $(( 666 % 256 )) ]]; then
+			# "die" command was used; this is the expected exit code.
+		elif [[ $dfhack_exit_code -gt 128 && $dfhack_exit_code -lt $(( 128 + 64 )) ]]; then
+			echo "DFHack exited with code $dfhack_exit_code (killed by fatal signal SIG$(kill -l $(( $dfhack_exit_code - 128 ))))" >&2
+		else
+			echo "DFHack exited with code $dfhack_exit_code" >&2
 		fi
 	done | while read -r line; do
 		fd=1

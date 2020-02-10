@@ -62,7 +62,7 @@ run_tests()
 			return 1
 		fi
 
-		DFHACK_HEADLESS=1 DFHACK_DISABLE_CONSOLE=1 TERM=dumb script -efq -c 'xvfb-run -a timeout -k 10s 5m ./dfhack > /dev/null 2>&1'
+		DFHACK_HEADLESS=1 DFHACK_DISABLE_CONSOLE=1 TERM=dumb script -efq -c 'xvfb-run -a timeout -k 10s 5m ./dfhack --exec > /dev/null 2>&1'
 		dfhack_exit_code=$?
 		if [[ $dfhack_exit_code -eq $(( 666 % 256 )) ]]; then
 			: # "die" command was used; this is the expected exit code.

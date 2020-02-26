@@ -1,6 +1,6 @@
 # don't use Go 1.14; it has a severe bug that causes immediate crashes on
 # Ubuntu - https://github.com/golang/go/issues/37436
-FROM golang:1.13 as gobuilder
+FROM golang:1.14 as gobuilder
 
 RUN go get -d github.com/BenLubar/git-last-modified \
  && go build -o /git-last-modified github.com/BenLubar/git-last-modified

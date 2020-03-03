@@ -101,7 +101,3 @@ ADD toolchain.cmake vcvars_32.bash vcvars_64.bash /home/buildmaster/
 
 ENV WINEDEBUG=-all \
     WINEPATH=C:\\clcache
-
-# unknown why it's failing so often with timeouts
-# just disable it completely for now
-ENV CLCACHE_DISABLE=1

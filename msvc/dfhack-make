@@ -7,9 +7,9 @@ done
 . "$dir/dfhack-clcache-env.sh"
 
 if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
-	ninja "$@" <&1
+	ninja -j2 "$@" <&1
 else
-	make -j$(nproc) "$@" <&1
+	make -j2 "$@" <&1
 fi
 
 wineserver -w

@@ -40,9 +40,10 @@ RUN Xvfb :0 -screen 0 1024x768x24 \
  && rm -rf /home/buildmaster/.cache/winetricks
 
 # Add native build directory.
+# (maintainer: Update cloned git tag only if needed.)
 RUN mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
- && git clone --depth=1 --recursive https://github.com/DFHack/dfhack.git \
+ && git clone -b 0.44.12-r3 --depth=1 --recursive https://github.com/DFHack/dfhack.git \
  && cmake dfhack \
         -DDFHACK_BUILD_ARCH=64 \
         -DBUILD_LIBRARY=OFF \
@@ -62,8 +63,8 @@ RUN mkdir /home/buildmaster/dfhack-native \
  && mv dfhack-native-bin dfhack-native
 
 # Download clcache.
-RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v4.1.0/clcache-4.1.0.zip \
- && echo "3d41d98000e1edb705f2237204b943edd95afeb95a6f33c9ff87aa986471cce7  clcache.zip" | sha256sum -c \
+RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v4.2.0/clcache-4.2.0.zip \
+ && echo "88931709a8f52936e5eb03a2d94c804f79a4b140f4fc4ff30bf08ccd45325068  clcache.zip" | sha256sum -c \
  && unzip clcache.zip -d /home/buildmaster/.wine/drive_c/clcache \
  && rm -f clcache.zip
 

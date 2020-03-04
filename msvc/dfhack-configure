@@ -73,6 +73,6 @@ args=" -DCMAKE_TOOLCHAIN_FILE=/home/buildmaster/toolchain.cmake -DDFHACK_BUILD_A
 
 . dfhack-clcache-env.sh
 
-cmake $args "$@" <&1
+cmake $args "$@" <&0
 
 wineserver -w

@@ -56,4 +56,4 @@ fi
 
 args=" -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode $args"
 
-exec cmake $args "$@" <&1
+exec cmake $args "$@" <&0

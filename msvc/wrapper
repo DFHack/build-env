@@ -10,6 +10,16 @@ done
 
 #echo '[DFHack debug] rewrote command to '"$(basename "$0")"'.exe '"${args[*]}"
 
-wine "$(basename "$0")" "${args[@]}" <&1
+if [[ "$(basename "$0")" == "clcache" ]]; then
+	if wine "$(basename "$0")" "${args[@]}" < /dev/null; then
+		wineserver -w
+		exit
+	else
+		echo "[DFHack] attempting again with clcache disabled."
+		export CLCACHE_DISABLE=1
+	fi
+fi
+
+wine "$(basename "$0")" "${args[@]}" < /dev/null
 
 wineserver -w

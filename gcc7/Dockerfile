@@ -102,12 +102,13 @@ RUN useradd --uid 1001 --create-home --shell /bin/bash buildmaster \
  && chmod a+rx /root /root/lua53/bin/* \
  && chmod -R a+rX /root/lua53 \
  && cd /home/buildmaster \
- && mkdir -p dfhack-native-bin/depends/protobuf \
+ && mkdir -p dfhack-native-bin/depends/protobuf dfhack-native-bin/travis \
  && mv dfhack-native/ImportExecutables.cmake dfhack-native-bin \
  && mv dfhack-native/depends/protobuf/libprotobuf.so \
        dfhack-native/depends/protobuf/libprotoc.so \
        dfhack-native/depends/protobuf/protoc \
        dfhack-native-bin/depends/protobuf \
+ && mv dfhack-native/dfhack/travis/run-tests.py dfhack-native-bin/travis \
  && rm -rf dfhack-native \
  && mv dfhack-native-bin dfhack-native
 

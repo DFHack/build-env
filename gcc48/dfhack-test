@@ -2,7 +2,7 @@
 
 usage()
 {
-	echo 'Usage: dfhack-test [os] [bits]' >&2
+	echo 'Usage: dfhack-test [os] [bits] [command]' >&2
 	echo 'os: linux or macosx' >&2
 	echo 'bits: 32 or 64' >&2
 	echo '(run inside the DF folder)' >&2
@@ -23,3 +23,18 @@ if [[ "$os" != "linux" ]] || [[ "$bits" != "64" ]]; then
 fi
 
 rm -f libs/libstdc++.so.6 # silence a warning when this gets deleted by DFHack
+
+python3 /home/buildmaster/dfhack-native/travis/run-tests.py \
+	--headless \
+	--keep-status \
+	"$(pwd)" | \
+while read -r line; do
+	fd=1
+	# lines containing light red text go to stderr
+	if [[ "$line" == *$'\x1b[01;31m'* ]]; then
+		fd=2
+	fi
+
+	# remove ANSI escape sequences
+	perl -pe 's/\r//g and s/\x1b\[[0-9;]+m//g' <<<"$line" >&$fd
+done

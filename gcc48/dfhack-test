@@ -24,10 +24,7 @@ fi
 
 rm -f libs/libstdc++.so.6 # silence a warning when this gets deleted by DFHack
 
-python3 /home/buildmaster/dfhack-native/travis/run-tests.py \
-	--headless \
-	--keep-status \
-	"$(pwd)" | \
+TERM=dumb xvfb-run -a script -q -e -f -c 'python3 /home/buildmaster/dfhack-native/travis/run-tests.py --headless --keep-status "$(pwd)"' /dev/null | \
 while read -r line; do
 	fd=1
 	# lines containing light red text go to stderr

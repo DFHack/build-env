@@ -138,5 +138,10 @@ RUN mkdir -p /usr/lib/ccache-osx \
 
 ADD dfhack-configure dfhack-make dfhack-test /usr/local/bin/
 
+RUN mv /usr/local/bin/sphinx-build /usr/local/bin/sphinx-build-real \
+ && (echo '#!/bin/sh'; \
+     echo 'exec timeout 5m sphinx-build-real "$@"') > /usr/local/bin/sphinx-build \
+ && chmod +x /usr/local/bin/sphinx-build
+
 USER buildmaster
 WORKDIR /home/buildmaster

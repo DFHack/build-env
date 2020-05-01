@@ -163,6 +163,8 @@ RUN cd /root \
         install \
  && rm -rf /root/boost_1_67_0
 
+ENV BOOST_LIBRARYDIR=/usr/local/lib
+
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++-4.8 \
  && ln -s ../../bin/ccache /usr/lib/ccache/gcc-4.8

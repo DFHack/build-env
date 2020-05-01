@@ -23,6 +23,7 @@
 - Sphinx (used to build DFHack documentation)
 - zlib for 32-bit and 64-bit Linux and Mac OS X
 - libSDL.so for 32-bit and 64-bit Linux
+- Precompiled Boost 1.67 or newer
 
 ### Latest image
 
@@ -41,6 +42,7 @@
 - Sphinx (used to build DFHack documentation)
 - zlib for 32-bit and 64-bit Linux and Mac OS X
 - libSDL.so for 32-bit and 64-bit Linux
+- Precompiled Boost 1.67 or newer
 
 ### MSVC image
 
@@ -52,6 +54,7 @@
 - Google protocol buffer compiler (shim DFHack native build directory at `/home/buildmaster/dfhack-native`)
 - Perl with `XML::LibXML` and `XML::LibXSLT` (required for df-structures)
 - Sphinx (used to build DFHack documentation)
+- Precompiled Boost 1.67 or newer
 - X Virtual Framebuffer (xvfb)
 - .NET Framework 4.5.2
 - Wine

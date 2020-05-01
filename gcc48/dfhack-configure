@@ -18,7 +18,7 @@ bits=$2
 mode=$3
 shift 3
 
-args=
+args=-DBOOST_LIBRARYDIR=/usr/local/lib
 
 case $os in
 linux)

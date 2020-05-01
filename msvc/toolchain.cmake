@@ -11,3 +11,4 @@ set(CMAKE_LINKER /usr/local/bin/link)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Release") #|RelWithDebInfo
 set(CMAKE_CROSS_COMPILING ON)
 set(MSVC_VERSION 1900)
+set(MSVC10 ON) # for dfplex

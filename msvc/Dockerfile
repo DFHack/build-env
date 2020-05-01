@@ -92,6 +92,11 @@ RUN cd /root \
  && cd .. \
  && rm -rf embed-resource
 
+COPY boost-1.67-precompiled.tar.xz /
+RUN cd / \
+ && tar xf boost-1.67-precompiled.tar.xz \
+ && rm boost-1.67-precompiled.tar.xz
+
 ADD dfhack-configure dfhack-make dfhack-test wrapper /usr/local/bin/
 RUN ln -s wrapper /usr/local/bin/clcache \
  && ln -s wrapper /usr/local/bin/link \

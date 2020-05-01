@@ -131,6 +131,42 @@ RUN cd /root \
  && cd .. \
  && rm -rf embed-resource
 
+RUN cd /root \
+ && curl -LSo boost_1_67_0.tar.bz2 https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.bz2 \
+ && echo "2684c972994ee57fc5632e03bf044746f6eb45d4920c343937a465fd67a5adba  boost_1_67_0.tar.bz2" | sha256sum -c \
+ && tar xf boost_1_67_0.tar.bz2 \
+ && rm -f boost_1_67_0.tar.bz2 \
+ && cd boost_1_67_0 \
+ && ./bootstrap.sh \
+ && ./b2 -d0 -j10 -q \
+        --layout=versioned \
+        --without-python \
+        toolset=gcc \
+        address-model=32,64 \
+        cxxflags=-fPIC \
+        variant=release \
+        link=static \
+        threading=multi \
+        install \
+ && (echo 'using gcc : darwin : x86_64-apple-darwin14-g++ :'; \
+     echo '<archiver>x86_64-apple-darwin14-ar'; \
+     echo '<assembler>x86_64-apple-darwin14-as'; \
+     echo '<ranlib>x86_64-apple-darwin14-ranlib ;') >> project-config.jam \
+ && ./b2 -d0 -j10 -q \
+        --layout=versioned \
+        --prefix=/osxcross/target \
+        --without-python \
+        toolset=gcc-darwin \
+        target-os=darwin \
+        address-model=32,64 \
+        cxxflags=-fPIC \
+        variant=release \
+        link=static \
+        threading=multi \
+        binary-format=mach-o \
+        install \
+ && rm -rf /root/boost_1_67_0
+
 RUN mkdir -p /usr/lib/ccache \
  && ln -s ../../bin/ccache /usr/lib/ccache/g++ \
  && ln -s ../../bin/ccache /usr/lib/ccache/gcc

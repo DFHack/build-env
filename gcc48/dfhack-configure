@@ -18,7 +18,7 @@ bits=$2
 mode=$3
 shift 3
 
-args=-DBOOST_LIBRARYDIR=/usr/local/lib
+args="-DBOOST_LIBRARYDIR=/usr/local/lib"
 
 case $os in
 linux)
@@ -34,7 +34,11 @@ macosx)
 esac
 
 case $bits in
-32|64)
+32)
+	args="$args -DCMAKE_CXX_COMPILER_ARCHITECTURE_ID=X86 -DCMAKE_SIZEOF_VOID_P=4"
+	;;
+64)
+	args="$args -DCMAKE_CXX_COMPILER_ARCHITECTURE_ID=x64 -DCMAKE_SIZEOF_VOID_P=8"
 	;;
 *)
 	usage

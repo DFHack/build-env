@@ -150,7 +150,6 @@ RUN cd /root \
      echo '<ranlib>x86_64-apple-darwin14-ranlib ;') >> project-config.jam \
  && ./b2 -d0 -j10 -q \
         --layout=versioned \
-        --prefix=/osxcross/target \
         --without-python \
         toolset=gcc-darwin \
         target-os=darwin \
@@ -161,6 +160,7 @@ RUN cd /root \
         threading=multi \
         binary-format=mach-o \
         install \
+ && rename.ul -- '-gcc-' '-xgcc75-' /usr/local/lib/libboost_*-gcc-mt-x??-1_67.a \
  && rm -rf /root/boost_1_67_0
 
 ENV BOOST_LIBRARYDIR=/usr/local/lib

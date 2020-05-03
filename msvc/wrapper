@@ -3,7 +3,7 @@
 declare -a args
 
 while (( "$#" )); do
-	arg="$(perl -pe 's#(?<!\.dir)/home/buildmaster#Z:/home/buildmaster#g' <<<"$1" | perl -pe 's#(?<!\.dir)/opt/cmake#Z:/opt/cmake#g')"
+	arg="$(perl -pe 's#(?<!\.dir)/home/buildmaster#Z:/home/buildmaster#g' <<<"$1" | perl -pe 's#(?<!\.dir)/opt/cmake#Z:/opt/cmake#g' | perl -pe 's#(?<!\.dir)/sw/local#Z:/sw/local#g')"
 	args+=("$arg")
 	shift
 done

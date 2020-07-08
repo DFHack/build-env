@@ -33,12 +33,14 @@ RUN dpkg --add-architecture i386 \
         lua5.3 \
         mesa-common-dev \
         ninja-build \
-        python3-sphinx \
+        python3-pip \
         ruby \
         xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
  && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --compile sphinx
 
 RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \

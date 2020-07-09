@@ -7,7 +7,7 @@ RUN dpkg --add-architecture i386 \
         libxml-libxslt-perl \
         lua5.3 \
         ninja-build \
-        python3-sphinx \
+        python3-pip \
         ruby \
         wine32 \
         winetricks \
@@ -21,6 +21,8 @@ RUN dpkg --add-architecture i386 \
  && tar xzCf /opt/cmake /opt/cmake.tar.gz --strip-components=1 \
  && sed -e 's#/Zi#/Z7#g' -i /opt/cmake/share/cmake-3.11/Modules/Platform/Windows-MSVC.cmake \
  && rm -f /opt/cmake.tar.gz
+
+RUN pip3 install --compile sphinx
 
 USER buildmaster
 WORKDIR /home/buildmaster

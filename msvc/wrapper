@@ -12,7 +12,6 @@ done
 
 if [[ "$(basename "$0")" == "clcache" ]]; then
 	if wine "$(basename "$0")" "${args[@]}" < /dev/null; then
-		wineserver -w
 		exit
 	else
 		echo "[DFHack] attempting again with clcache disabled."
@@ -21,5 +20,3 @@ if [[ "$(basename "$0")" == "clcache" ]]; then
 fi
 
 wine "$(basename "$0")" "${args[@]}" < /dev/null
-
-wineserver -w

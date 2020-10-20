@@ -9,6 +9,7 @@ ENV CCACHE_SLOPPINESS=file_stat_matches,file_stat_matches_ctime,include_file_cti
     GCC_VERSION=7.5.0 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \
     OSXCROSS_GCC_NO_STATIC_RUNTIME=1 \
+    OSXCROSS_NO_INCLUDE_PATH_WARNINGS=1 \
     PATH=/usr/lib/ccache:/osxcross/target/bin:/opt/cmake/bin:$PATH
 
 COPY --from=gobuilder /git-last-modified /usr/bin/

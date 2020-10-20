@@ -150,23 +150,25 @@ RUN cd /root \
         link=static \
         threading=multi \
         install \
- && (echo 'using gcc : darwin : x86_64-apple-darwin14-g++ :'; \
-     echo '<archiver>x86_64-apple-darwin14-ar'; \
+ && ln -s /osxcross/target/bin/sw_vers /usr/bin/sw_vers \
+ && ln -s /osxcross/target/bin/x86_64-apple-darwin14-libtool /usr/bin/libtool \
+ && (echo 'using darwin : 7.5 : x86_64-apple-darwin14-g++ :'; \
      echo '<assembler>x86_64-apple-darwin14-as'; \
      echo '<ranlib>x86_64-apple-darwin14-ranlib ;') >> project-config.jam \
  && ./b2 -d0 -j10 -q \
         --layout=versioned \
         --without-python \
-        toolset=gcc-darwin \
+        toolset=darwin-7.5 \
         target-os=darwin \
         address-model=32,64 \
         cxxflags=-fPIC \
         variant=release \
         link=static \
         threading=multi \
+        architecture=x86 \
         binary-format=mach-o \
+        abi=sysv \
         install \
- && rename.ul -- '-gcc-' '-xgcc75-' /usr/local/lib/libboost_*-gcc-mt-x??-1_67.a \
  && rm -rf /root/boost_1_67_0
 
 ENV BOOST_LIBRARYDIR=/usr/local/lib

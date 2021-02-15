@@ -24,6 +24,18 @@ RUN dpkg --add-architecture i386 \
 
 RUN pip3 install --compile sphinx
 
+# Experimental: ccache with msvc support!
+RUN curl -LSo ccache.tar.gz https://github.com/ccache/ccache/archive/3972b9bd6f9c27df02d277d7253b316ffc125995.tar.gz \
+ && echo "a5ff66795bb4e92a2f007b25be4a4b94c5aea377537101d747efd9cdbdd40b6b  ccache.tar.gz" | sha256sum -c \
+ && tar xvf ccache.tar.gz \
+ && rm -f ccache.tar.gz \
+ && mkdir ccache-build \
+ && cd ccache-build \
+ && /opt/cmake/bin/cmake -G Ninja \
+        ../ccache-3972b9bd6f9c27df02d277d7253b316ffc125995 \
+        -DZSTD_FROM_INTERNET=1 \
+ && ninja install
+
 USER buildmaster
 WORKDIR /home/buildmaster
 
@@ -64,12 +76,6 @@ RUN mkdir /home/buildmaster/dfhack-native \
  && rm -rf dfhack-native \
  && mv dfhack-native-bin dfhack-native
 
-# Download clcache.
-RUN curl -LSo clcache.zip https://github.com/frerich/clcache/releases/download/v4.2.0/clcache-4.2.0.zip \
- && echo "88931709a8f52936e5eb03a2d94c804f79a4b140f4fc4ff30bf08ccd45325068  clcache.zip" | sha256sum -c \
- && unzip clcache.zip -d /home/buildmaster/.wine/drive_c/clcache \
- && rm -f clcache.zip
-
 # Set up wine_vcpp
 # Based on https://github.com/eruffaldi/wine_vcpp
 ADD ["Microsoft Visual Studio 14.0/VC","/home/buildmaster/wine_vcpp/VC"]
@@ -100,12 +106,11 @@ RUN cd / \
  && rm boost-1.67-precompiled.tar.xz
 
 ADD dfhack-configure dfhack-make dfhack-test wrapper /usr/local/bin/
-RUN ln -s wrapper /usr/local/bin/clcache \
+RUN ln -s wrapper /usr/local/bin/cl \
  && ln -s wrapper /usr/local/bin/link \
  && ln -s wrapper /usr/local/bin/mt \
  && ln -s wrapper /usr/local/bin/rc
 USER buildmaster
 ADD toolchain.cmake vcvars_32.bash vcvars_64.bash /home/buildmaster/
 
-ENV WINEDEBUG=-all \
-    WINEPATH=C:\\clcache
+ENV WINEDEBUG=-all

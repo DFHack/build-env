@@ -1,10 +1,10 @@
 #!/bin/bash -e
 
 dir="$(pwd)"
-while [[ ! -f "$dir/dfhack-clcache-env.sh" ]] && [[ "$dir" != "/" ]]; do
+while [[ ! -f "$dir/dfhack-msvc-env.sh" ]] && [[ "$dir" != "/" ]]; do
 	dir="$(dirname "$dir")"
 done
-. "$dir/dfhack-clcache-env.sh"
+. "$dir/dfhack-msvc-env.sh"
 
 if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
 	ninja "$@" <&0

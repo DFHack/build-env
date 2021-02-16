@@ -24,18 +24,6 @@ RUN dpkg --add-architecture i386 \
 
 RUN pip3 install --compile sphinx
 
-# Experimental: ccache with msvc support!
-RUN curl -LSo ccache.tar.gz https://github.com/ccache/ccache/archive/3972b9bd6f9c27df02d277d7253b316ffc125995.tar.gz \
- && echo "a5ff66795bb4e92a2f007b25be4a4b94c5aea377537101d747efd9cdbdd40b6b  ccache.tar.gz" | sha256sum -c \
- && tar xvf ccache.tar.gz \
- && rm -f ccache.tar.gz \
- && mkdir ccache-build \
- && cd ccache-build \
- && /opt/cmake/bin/cmake -G Ninja \
-        ../ccache-3972b9bd6f9c27df02d277d7253b316ffc125995 \
-        -DZSTD_FROM_INTERNET=1 \
- && ninja install
-
 USER buildmaster
 WORKDIR /home/buildmaster
 
@@ -112,5 +100,9 @@ RUN ln -s wrapper /usr/local/bin/cl \
  && ln -s wrapper /usr/local/bin/rc
 USER buildmaster
 ADD toolchain.cmake vcvars_32.bash vcvars_64.bash /home/buildmaster/
+
+# Experimental: ccache with msvc support!
+# Built from https://github.com/ccache/ccache/archive/3972b9bd6f9c27df02d277d7253b316ffc125995.tar.gz
+ADD ccache.exe /home/buildmaster/.wine/drive_c/windows/system32/
 
 ENV WINEDEBUG=-all

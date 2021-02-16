@@ -10,8 +10,8 @@ done
 
 #echo '[DFHack debug] rewrote command to '"$(basename "$0")"'.exe '"${args[*]}"
 
-if [[ "$(basename "$0")" == "cl" ]]; then
-	if ccache wine "$(basename "$0")" "${args[@]}" < /dev/null; then
+if [[ "$(basename "$0")" == "cl" ]] && [[ -z "$CCACHE_DISABLE" ]]; then
+	if wine ccache "$(basename "$0")" "${args[@]}" < /dev/null; then
 		exit
 	else
 		echo "[DFHack] attempting again with ccache disabled."

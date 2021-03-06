@@ -26,15 +26,22 @@ RUN dpkg --add-architecture i386 \
         libxml-libxslt-perl \
         mesa-common-dev \
         ninja-build \
-        python3-dev \
-        python3-pip \
         ruby \
+        software-properties-common \
         xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
+ && add-apt-repository -y ppa:deadsnakes/ppa \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3.6 \
+ && apt-get remove -y software-properties-common \
+ && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --compile 'sphinx<2.0' 'requests>=2.4.1'
+RUN curl https://bootstrap.pypa.io/get-pip.py | sudo -H python3.6
+
+RUN pip3 install --compile sphinx 'requests>=2.4.1'
 
 RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \

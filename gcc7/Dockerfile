@@ -1,7 +1,8 @@
 FROM golang as gobuilder
 
-RUN go get -d github.com/BenLubar/git-last-modified \
- && go build -o /git-last-modified github.com/BenLubar/git-last-modified
+RUN git clone https://github.com/BenLubar/git-last-modified.git src \
+ && cd src \
+ && go build -o /git-last-modified
 
 FROM buildpack-deps:bionic
 

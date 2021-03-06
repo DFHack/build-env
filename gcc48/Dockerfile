@@ -39,7 +39,7 @@ RUN dpkg --add-architecture i386 \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl https://bootstrap.pypa.io/get-pip.py | sudo -H python3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
 RUN pip3 install --compile sphinx 'requests>=2.4.1'
 

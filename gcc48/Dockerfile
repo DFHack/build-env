@@ -31,15 +31,14 @@ RUN dpkg --add-architecture i386 \
         xvfb \
         zlib1g-dev:amd64 \
         zlib1g-dev:i386 \
- && add-apt-repository -y ppa:deadsnakes/ppa \
- && apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        python3.6 \
  && apt-get remove -y software-properties-common \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+ADD python3.6_3.6.8-1+trusty1_amd64.deb python3.6-minimal_3.6.8-1+trusty1_amd64.deb libpython3.6-stdlib_3.6.8-1+trusty1_amd64.deb libpython3.6-minimal_3.6.8-1+trusty1_amd64.deb /
+
+RUN dpkg -i python3.6_3.6.8-1+trusty1_amd64.deb python3.6-minimal_3.6.8-1+trusty1_amd64.deb libpython3.6-stdlib_3.6.8-1+trusty1_amd64.deb libpython3.6-minimal_3.6.8-1+trusty1_amd64.deb \
+ && curl https://bootstrap.pypa.io/pip/3.6/get-pip.py | python3.6
 
 RUN pip3 install --compile sphinx 'requests>=2.4.1'
 
@@ -48,7 +47,7 @@ RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && curl -LSo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.22.4/cmake-3.22.4-linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
- && curl -LSo gcc-4.8.5.tar.gz https://ftpmirror.gnu.org/gcc/gcc-4.8.5/gcc-4.8.5.tar.gz \
+ && curl -LSko gcc-4.8.5.tar.gz https://ftpmirror.gnu.org/gcc/gcc-4.8.5/gcc-4.8.5.tar.gz \
  && curl -LSo ccache-4.2.tar.xz https://github.com/ccache/ccache/releases/download/v4.2/ccache-4.2.tar.xz \
  && (echo "bb70a78b464bf59c4188250f196ad19996f2dafd61c25e7c07f105cf5a95d228  cmake.tar.gz"; \
      echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \

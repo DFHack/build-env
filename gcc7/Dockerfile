@@ -140,7 +140,7 @@ RUN cd /root \
  && rm -rf embed-resource
 
 RUN cd /root \
- && curl -LSo boost_1_67_0.tar.bz2 https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.bz2 \
+ && curl -LSo boost_1_67_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.bz2 \
  && echo "2684c972994ee57fc5632e03bf044746f6eb45d4920c343937a465fd67a5adba  boost_1_67_0.tar.bz2" | sha256sum -c \
  && tar xf boost_1_67_0.tar.bz2 \
  && rm -f boost_1_67_0.tar.bz2 \

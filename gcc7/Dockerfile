@@ -46,12 +46,12 @@ RUN pip3 install --compile sphinx
 
 RUN mkdir -p /osxcross/tarballs /opt/cmake /usr/src/ccache \
  && cd /osxcross/tarballs \
- && curl -LSo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.22.4/cmake-3.22.4-linux-x86_64.tar.gz \
+ && curl -LSo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.17.5/cmake-3.17.5-Linux-x86_64.tar.gz \
  && curl -LSo osxcross.tar.gz https://github.com/tpoechtrager/osxcross/archive/1a1733a773fe26e7b6c93b16fbf9341f22fac831.tar.gz \
  && curl -LSo MacOSX10.10.sdk.tar.xz https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.10.sdk.tar.xz \
  && curl -LSo gcc-7.5.0.tar.gz https://ftpmirror.gnu.org/gcc/gcc-7.5.0/gcc-7.5.0.tar.gz \
  && curl -LSo ccache-4.2.tar.xz https://github.com/ccache/ccache/releases/download/v4.2/ccache-4.2.tar.xz \
- && (echo "bb70a78b464bf59c4188250f196ad19996f2dafd61c25e7c07f105cf5a95d228  cmake.tar.gz"; \
+ && (echo "897142368b15a5693c999a7ed2187be20c1b41a68c3711379d32a33469bb29ba  cmake.tar.gz"; \
      echo "c6cead036022edb7013a6adebf5c6832e06d5281b72515b10890bf91b8fe9ada  osxcross.tar.gz"; \
      echo "4a08de46b8e96f6db7ad3202054e28d7b3d60a3d38cd56e61f08fb4863c488ce  MacOSX10.10.sdk.tar.xz"; \
      echo "4f518f18cfb694ad7975064e99e200fe98af13603b47e67e801ba9580e50a07f  gcc-7.5.0.tar.gz"; \

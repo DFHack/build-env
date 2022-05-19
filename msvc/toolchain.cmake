@@ -8,7 +8,7 @@ set(CMAKE_C_COMPILER_ID MSVC)
 set(CMAKE_C_PLATFORM_ID Windows)
 set(CMAKE_C_COMPILER /usr/local/bin/cl)
 set(CMAKE_LINKER /usr/local/bin/link)
-set(CMAKE_AR "${CMAKE_LINKER} /lib")
+set(CMAKE_AR /usr/local/bin/lib)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Release") #|RelWithDebInfo
 set(CMAKE_CROSS_COMPILING ON)
 set(MSVC_VERSION 1900)

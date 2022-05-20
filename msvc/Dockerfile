@@ -19,7 +19,7 @@ RUN dpkg --add-architecture i386 \
  && curl -LSo cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.17.5/cmake-3.17.5-Linux-x86_64.tar.gz \
  && echo "897142368b15a5693c999a7ed2187be20c1b41a68c3711379d32a33469bb29ba  cmake.tar.gz" | sha256sum -c \
  && tar xzCf /opt/cmake /opt/cmake.tar.gz --strip-components=1 \
- && sed -e 's#/Zi#/Z7#g' -i /opt/cmake/share/cmake-3.22/Modules/Platform/Windows-MSVC.cmake \
+ && sed -e 's#/Zi#/Z7#g' -i /opt/cmake/share/cmake-3.17/Modules/Platform/Windows-MSVC.cmake \
  && rm -f /opt/cmake.tar.gz
 
 RUN pip3 install --compile sphinx

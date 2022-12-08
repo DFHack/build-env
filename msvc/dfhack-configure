@@ -62,6 +62,8 @@ fi
 
 args=" -DCMAKE_TOOLCHAIN_FILE=/home/buildmaster/toolchain.cmake -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_LINKER=/usr/local/bin/link -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native $args"
 
+wineserver -p
+
 . dfhack-msvc-env.sh
 
 cmake $args "$@" <&0

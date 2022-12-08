@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+wineserver -p
+
 dir="$(pwd)"
 while [[ ! -f "$dir/dfhack-msvc-env.sh" ]] && [[ "$dir" != "/" ]]; do
 	dir="$(dirname "$dir")"

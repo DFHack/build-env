@@ -59,7 +59,9 @@ esac
 wineserver -p
 wine64 wineboot
 
-CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
+CCACHE=/usr/local/bin/ccache-win
+
+CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DCCACHE_EXECUTABLE=$CCACHE -DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE -DCMAKE_C_COMPILER_LAUNCHER=$CCACHE -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
 
 wineserver -k
 wineserver -w

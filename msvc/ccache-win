@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+wine64 C:/windows/system32/ccache.exe "$@"

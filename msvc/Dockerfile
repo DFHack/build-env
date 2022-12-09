@@ -61,4 +61,4 @@ RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init && wineserver -w
 ADD ccache.exe /home/buildmaster/.wine/drive_c/windows/system32/
 
 USER root
-ADD dfhack-configure dfhack-make dfhack-test /usr/local/bin/
+ADD dfhack-configure dfhack-make dfhack-test ccache-win /usr/local/bin/

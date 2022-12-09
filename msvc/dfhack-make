@@ -1,19 +1,11 @@
 #!/bin/bash -e
 
+. msvcenv-native.sh
+
 wineserver -p
 wine wineboot
 
-dir="$(pwd)"
-while [[ ! -f "$dir/dfhack-msvc-env.sh" ]] && [[ "$dir" != "/" ]]; do
-	dir="$(dirname "$dir")"
-done
-. "$dir/dfhack-msvc-env.sh"
-
-if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
-	ninja "$@" <&0
-else
-	make -j$(nproc) "$@" <&0
-fi
+ninja "$@" <&0
 
 wineserver -k
 wineserver -w

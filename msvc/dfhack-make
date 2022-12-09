@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
-wineserver -p5
+echo "starting persistent wineserver (make)"
+wineserver -p
 
 dir="$(pwd)"
 while [[ ! -f "$dir/dfhack-msvc-env.sh" ]] && [[ "$dir" != "/" ]]; do
@@ -14,4 +15,7 @@ else
 	make -j$(nproc) "$@" <&0
 fi
 
+echo "shutting down wineserver (make)"
+wineserver -k
 wineserver -w
+echo "wineserver terminated (make)"

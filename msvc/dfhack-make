@@ -2,6 +2,7 @@
 
 echo "starting persistent wineserver (make)"
 wineserver -p
+wine64 wineboot
 
 dir="$(pwd)"
 while [[ ! -f "$dir/dfhack-msvc-env.sh" ]] && [[ "$dir" != "/" ]]; do

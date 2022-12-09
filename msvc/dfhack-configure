@@ -64,6 +64,7 @@ args=" -DCMAKE_TOOLCHAIN_FILE=/home/buildmaster/toolchain.cmake -DDFHACK_BUILD_A
 
 echo "starting persistent wineserver (configure)"
 wineserver -p
+wine64 wineboot
 
 . dfhack-msvc-env.sh
 

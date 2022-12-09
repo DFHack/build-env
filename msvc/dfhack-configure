@@ -41,8 +41,6 @@ case $bits in
 	;;
 esac
 
-cat "/home/buildmaster/vcvars_$bits.bash" >> dfhack-msvc-env.sh
-
 case $mode in
 Release)
 	;;
@@ -56,18 +54,12 @@ RelWithDebInfo)
 	;;
 esac
 
-if [[ ! -z "$DFHACK_USE_NINJA" ]]; then
-	args="-G Ninja $args"
-fi
-
-args=" -DCMAKE_TOOLCHAIN_FILE=/home/buildmaster/toolchain.cmake -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_LINKER=/usr/local/bin/link -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native $args"
+. msvcenv-native.sh
 
 wineserver -p
-wine wineboot
+wine64 wineboot
 
-. dfhack-msvc-env.sh
-
-cmake $args "$@" <&0
+CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
 
 wineserver -k
 wineserver -w

@@ -40,15 +40,18 @@ ENV BIN=/opt/msvc/bin/x64 \
 RUN mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
  && git clone -n https://github.com/DFHack/dfhack.git \
- && cd dfhack && git checkout 9777f8ba029e47c747a034fc281e13ca70067c09 \
+ && cd dfhack \
+ && git checkout d21d4d7f5348942b1574d5ecad8ed3d0ba027929 \
  && git submodule update --init \
- && cd build \
- && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_RUBY=OFF && ninja protoc \
- && cd ../.. \
- && mkdir -p depends/protobuf \
- && mv dfhack/build/ImportExecutables.cmake . \
- && cp dfhack/build/depends/protobuf/protoc depends/protobuf \
- && rm -rf dfhack
+ && cd .. \
+ && cmake dfhack -GNinja -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_RUBY=OFF \
+ && ninja protoc \
+ && cd .. \
+ && mkdir -p dfhack-native-bin/depends/protobuf \
+ && mv dfhack-native/ImportExecutables.cmake dfhack-native-bin \
+ && mv dfhack-native/depends/protobuf/protoc* dfhack-native-bin/depends/protobuf \
+ && rm -rf dfhack-native \
+ && mv dfhack-native-bin dfhack-native
 
 # Get rid of the "install mono?" and "install gecko?" prompts.
 RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init && wineserver -w

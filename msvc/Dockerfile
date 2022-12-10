@@ -56,9 +56,5 @@ RUN mkdir /home/buildmaster/dfhack-native \
 # Get rid of the "install mono?" and "install gecko?" prompts.
 RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init && wineserver -w
 
-# Experimental: ccache with msvc support!
-# Built from https://github.com/ccache/ccache/archive/3972b9bd6f9c27df02d277d7253b316ffc125995.tar.gz
-ADD ccache.exe /home/buildmaster/.wine/drive_c/windows/system32/
-
 USER root
-ADD dfhack-configure dfhack-make dfhack-test ccache-win /usr/local/bin/
+ADD dfhack-configure dfhack-make dfhack-test /usr/local/bin/

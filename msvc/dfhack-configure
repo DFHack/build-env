@@ -18,11 +18,6 @@ bits=$2
 mode=$3
 shift 3
 
-if [[ -z "$CCACHE_BASEDIR" ]] || [[ ! -d "$CCACHE_BASEDIR" ]]; then
-	echo "The environment variable CCACHE_BASEDIR should be set to the closest parent directory of the source and build directories." >&2
-	exit 2
-fi
-
 case $os in
 windows)
 	;;
@@ -59,9 +54,7 @@ esac
 wineserver -p
 wine64 wineboot
 
-CCACHE=/usr/local/bin/ccache-win
-
-CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DCCACHE_EXECUTABLE=$CCACHE -DCMAKE_CXX_COMPILER_LAUNCHER=$CCACHE -DCMAKE_C_COMPILER_LAUNCHER=$CCACHE -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
+CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
 
 wineserver -k
 wineserver -w

@@ -1,21 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash
 
-usage()
-{
-	echo 'Usage: dfhack-test [os] [bits]' >&2
-	echo 'os: windows' >&2
-	echo 'bits: 32 or 64' >&2
-	echo '(run inside the DF folder)' >&2
-}
+. msvcenv-native.sh
 
-if [[ $# -ne 2 ]]; then
-	usage
-	exit 1
-fi
+wineserver -p
+wine wineboot
 
-os=$1
-bits=$2
-shift 2
+ninja test
 
-echo '[temporary] Skipping tests for all platforms other than 64-bit Linux.'
-exit 0
+wineserver -k
+wineserver -w

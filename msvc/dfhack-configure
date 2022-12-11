@@ -55,6 +55,9 @@ wineserver -p
 wine64 wineboot
 
 CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
+status=$?
 
 wineserver -k
 wineserver -w
+
+exit $status

@@ -4,7 +4,7 @@ FROM ubuntu:20.04
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y wine64-development python3 msitools python3-simplejson python3-six ca-certificates \
- && apt-get install -y gcc g++ ninja-build zlib1g-dev libsdl1.2-dev libxml-libxml-perl libxml-libxslt-perl make libncurses-dev libssl-dev \
+ && apt-get install -y gcc g++ ninja-build git zlib1g-dev libsdl1.2-dev libxml-libxml-perl libxml-libxslt-perl make libncurses-dev libssl-dev \
  && apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev \
  && apt-get install -y wget curl unzip vim bash-completion xvfb python3-pip \
  && apt-get clean -y \

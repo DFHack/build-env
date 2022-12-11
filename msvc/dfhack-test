@@ -6,6 +6,9 @@ wineserver -p
 wine wineboot
 
 ninja test
+status=$?
 
 wineserver -k
 wineserver -w
+
+exit $status

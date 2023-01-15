@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+ARG BUILDER_UID=1001
+
 # install dependencies
 RUN apt-get update \
  && apt-get upgrade -y \
@@ -10,7 +12,7 @@ RUN apt-get update \
  && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install --compile sphinx \
- && useradd --uid 1001 --create-home --shell /bin/bash buildmaster
+ && useradd --uid $BUILDER_UID --create-home --shell /bin/bash buildmaster
 
 # set up msvc
 WORKDIR /opt/msvc

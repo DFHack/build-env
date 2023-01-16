@@ -81,3 +81,8 @@ RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init \
 # copy in frequently-changing scripts last so the image can be quickly rebuilt
 USER root
 COPY dfhack-configure dfhack-make dfhack-test /usr/local/bin/
+
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD bash

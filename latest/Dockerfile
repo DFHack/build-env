@@ -1,5 +1,7 @@
 FROM golang as gobuilder
 
+LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
+
 RUN git clone https://github.com/BenLubar/git-last-modified.git src \
  && cd src \
  && go build -o /git-last-modified

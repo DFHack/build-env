@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
+
 ARG BUILDER_UID=1001
 
 # install dependencies

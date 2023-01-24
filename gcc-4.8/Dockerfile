@@ -1,5 +1,7 @@
 FROM buildpack-deps:trusty
 
+LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
+
 ENV CCACHE_SLOPPINESS=file_stat_matches,file_stat_matches_ctime,include_file_ctime,include_file_mtime,locale \
     GCC_VERSION=4.8.5 \
     MACOSX_DEPLOYMENT_TARGET=10.6 \

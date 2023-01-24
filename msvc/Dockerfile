@@ -19,10 +19,13 @@ WORKDIR /opt/msvc
 COPY lowercase fixinclude install.sh vsdownload.py msvcenv-native.sh ./
 COPY wrappers/* ./wrappers/
 
+# This removes the arm and x86 bits to save space (around 5.5G)
 RUN PYTHONUNBUFFERED=1 ./vsdownload.py --accept-license --dest /opt/msvc \
  && ./install.sh /opt/msvc \
  && rm lowercase fixinclude install.sh vsdownload.py \
- && rm -rf wrappers
+ && rm -rf wrappers \
+ && find /opt/msvc -depth -type d -iregex '.*/.*arm[0-9]*$' -exec rm -fr {} \; \
+ && find /opt/msvc -depth -type d -iregex '.*/.*x86$' -exec rm -fr {} \;
 
 ENV BIN=/opt/msvc/bin/x64 \
     PATH=/opt/msvc:/opt/msvc/bin/x64:/opt/git/bin:/opt/ccache/bin:/opt/cmake/bin:$PATH \

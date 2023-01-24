@@ -40,5 +40,5 @@ jobs:
         push: true
         tags: ghcr.io/${{ env.GHCR_NAMESPACE }}/${{ env.IMAGE_NAME }}:msvc
 env:
-  GHCR_NAMESPACE: DFHack-Urist
+  GHCR_NAMESPACE: dfhack-urist
   IMAGE_NAME: build-env

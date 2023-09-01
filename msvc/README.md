@@ -1,8 +1,17 @@
 Cross compilation with MSVC on Linux
 ====================================
 
-This is a reproducible Dockerfile for cross compiling with MSVC on Linux,
-usable as base image for CI style setups.
+This is a set of tools for using MSVC on Linux (and other Unix OSes).
+
+It consists of two main parts:
+
+- A Python script that downloads and unpacks MSVC and the Windows SDK
+
+- Wrapping and tweaking of the unpacked MSVC/WinSDK to make MSVC work
+  transparently from Unix based build tools with Wine
+
+The first part also works without the second, as a source of MSVC
+and WinSDK for use with e.g. clang-cl.
 
 This downloads and unpacks the necessary Visual Studio components using
 the same installer manifests as Visual Studio 2017/2019's installer
@@ -10,25 +19,25 @@ uses. Downloading and installing it requires accepting the license,
 available at https://go.microsoft.com/fwlink/?LinkId=2086102 for the
 currently latest version.
 
-As Visual Studio isn't redistributable, the resulting docker image isn't
+As Visual Studio isn't redistributable, the installed toolchain isn't
 either.
 
-Build the docker image like this:
-
-    docker build .
-
-After building the docker image, there are 4 directories with tools,
-in `/opt/msvc/bin/<arch>`, for all architectures out of `x86`,
-`x64`, `arm` and `arm64`, that should be added to the PATH before building
-with it.
-
-The installer scripts also work fine without docker; just run the following two commands:
+To install, just run the following two commands:
 
     ./vsdownload.py --dest <dir>
     ./install.sh <dir>
 
 The unpacking requires recent versions of msitools (0.98) and libgcab
 (1.2); sufficiently new versions are available in e.g. Ubuntu 19.04.
+
+After installing the toolchain this way, there are 4 directories with tools,
+in `<dest>/bin/<arch>`, for all architectures out of `x86`,
+`x64`, `arm` and `arm64`, that should be added to the PATH before building
+with it.
+
+There's also a reproducible dockerfile, that creates a docker image with
+the MSVC tools available in `/opt/msvc`. (This also serves as a testable
+example of an environment where the install is known to work.)
 
 
 # Build instructions for local installation
@@ -52,31 +61,20 @@ We're going to install it into `~/my_msvc` to avoid needing root privileges on a
 # Add wrapper scripts, do minor cleanup of the unpacked MSVC installation
 ./install.sh ~/my_msvc/opt/msvc
 
-# Custom CMake
-git clone https://gitlab.kitware.com/mstorsjo/cmake.git
-cd cmake
-git checkout 844ccd2280d11ada286d0e2547c0fa5ff22bd4db
-mkdir build 
-cd build
-../configure --prefix=~/my_msvc/opt/cmake --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
-make -j$(nproc)
-make install
-
-# Run wine at least once
-wineserver -k # kills server (optional)
-wineserver -p
-wine64 wineboot
+# Optional: Start a persistent wineserver
+wineserver -k # Kill a potential old server
+wineserver -p # Start a new server
+wine64 wineboot # Run a process to start up all background wine processes
 ```
 
 ### Setting up your project with CMake
 
-You need to set the path to prioritize our custom CMake, and also to see our MSVC installation.
+You need to add the our MSVC installation to the path.
 After that we just run CMake command with a few extra settings:
 
 ```bash
-export PATH=~/my_msvc/opt/cmake/bin:$PATH
 export PATH=~/my_msvc/opt/msvc/bin/x64:$PATH
-CC=cl CXX=cl cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_PROGRAMS=ON -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON
+CC=cl CXX=cl cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=Windows
 make
 ```
 
@@ -135,9 +133,29 @@ Yes, but the install scripts won't work because `msitools` is too old. You'll ne
 
 ## Does it work with CMake?
 
-Yes, but a custom version is needed or else CMake will complain that `/opt/msvc/bin/x64/cl` can't build a simple program.
+Yes, but you need CMake 3.23, and either need `winbind` installed, or
+need to configure the build to always use embedded debug info (or a
+custom build of CMake that doesn't try to use separate PDB file debug
+info by default).
 
-It also fixes the `Ninja` Generator which otherwise has trouble finding RC.
+Even if configuring CMake with `-DCMAKE_BUILD_TYPE=Release`, CMake does
+call the compiler in `Debug` mode when it does the first few test
+invocations of the compiler. By default, CMake uses separate PDB
+file debug info, when compiling in `Debug` mode, i.e. using the
+`/Zi` compiler option (as opposed to the `/Z7` option, storing the
+debug info in the individual object files).
+
+When MSVC is invoked with the `/Zi` and `/FS` options, it spawns a
+background `mspdbsrv.exe` process and communicates with it. This
+requires the `winbind` package to be installed for this communication
+to work.
+
+With CMake 3.25, it's possible to override the type of debug info
+even for the first few probing steps. This requires the CMake project
+to either set `cmake_minimum_required(VERSION 3.25.0)`, or set
+`cmake_policy(SET CMP0141 NEW)`, and requires the user to configure it
+with `-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded`; in such a
+configuration, `winbind` isn't needed.
 
 ## Can it build Debug versions?
 

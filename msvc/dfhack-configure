@@ -54,7 +54,7 @@ esac
 wineserver -p
 wine64 wineboot
 
-CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native "$@" <&0
+CC=cl CXX=cl cmake .. -GNinja -DDFHACK_BUILD_ARCH=$bits -DCMAKE_BUILD_TYPE=$mode -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_CROSSCOMPILING=ON -DDFHACK_NATIVE_BUILD_DIR=/home/buildmaster/dfhack-native -DGITCOMMAND=$(which git) -DGIT_EXECUTABLE=$(which git) "$@" <&0
 status=$?
 
 wineserver -k

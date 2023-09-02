@@ -34,13 +34,19 @@ mkdir -p $DEST
 cd $DEST
 DEST=$(pwd)
 
+ln_s() {
+    if [ ! -e "$2" ]; then
+        ln -s "$1" "$2"
+    fi
+}
+
 if [ -n "$VC_ZIP" ]; then
     unzip $VC_ZIP
 fi
-ln -s kits "Windows Kits"
-ln -s VC vc
-ln -s Tools vc/tools
-ln -s MSVC vc/tools/msvc
+ln_s kits "Windows Kits"
+ln_s VC vc
+ln_s Tools vc/tools
+ln_s MSVC vc/tools/msvc
 
 # Add symlinks like LIBCMT.lib -> libcmt.lib. These are properly lowercased
 # out of the box, but MSVC produces directives like /DEFAULTLIB:"LIBCMT"
@@ -54,17 +60,38 @@ for arch in x86 x64 arm arm64; do
     fi
     cd $arch
     for i in libcmt libcmtd msvcrt msvcrtd oldnames; do
-        ln -s $i.lib $(echo $i | tr [a-z] [A-Z]).lib
+        ln_s $i.lib $(echo $i | tr [a-z] [A-Z]).lib
     done
     cd ..
 done
-cd ../bin
+cd ..
+# Fix casing issues in the MSVC headers. These headers mostly have consistent
+# lowercase naming among themselves, but they do reference some WinSDK headers
+# with mixed case names (in a spelling that isn't present in the WinSDK).
+# Thus process them to reference the other headers with lowercase names.
+# Also lowercase these files, as a few of them do have non-lowercase names,
+# and the call to fixinclude lowercases those references.
+$ORIG/lowercase -symlink include
+$ORIG/fixinclude include
+cd bin
 # vctip.exe is known to cause problems at some times; just remove it.
 # See https://bugs.chromium.org/p/chromium/issues/detail?id=735226 and
 # https://github.com/mstorsjo/msvc-wine/issues/23 for references.
 for i in $(find . -iname vctip.exe); do
     rm $i
 done
+if [ -d HostARM64 ]; then
+    # 17.2 - 17.3
+    mv HostARM64 Hostarm64
+fi
+if [ -d HostArm64 ]; then
+    # 17.4
+    mv HostArm64 Hostarm64
+fi
+if [ -d Hostarm64/ARM64 ]; then
+    # 17.2 - 17.3
+    mv Hostarm64/ARM64 Hostarm64/arm64
+fi
 cd "$DEST"
 
 if [ -d kits/10 ]; then
@@ -75,8 +102,8 @@ else
     unzip $SDK_ZIP
     cd 10
 fi
-ln -s Lib lib
-ln -s Include include
+ln_s Lib lib
+ln_s Include include
 cd ../..
 SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 
@@ -92,26 +119,48 @@ SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 # an option, because the headers aren't self consistent (headers are
 # included with a different mix of upper/lower case than what they have
 # on disk).
-$ORIG/lowercase kits/10/include/$SDKVER/um
-$ORIG/lowercase kits/10/include/$SDKVER/shared
-$ORIG/fixinclude kits/10/include/$SDKVER/um
-$ORIG/fixinclude kits/10/include/$SDKVER/shared
+#
+# The original casing of file names is preserved though, by adding lowercase
+# symlinks instead of doing a plain rename, so files can be referred to with
+# either the out of the box filename or with the lowercase name.
+$ORIG/lowercase -map_winsdk -symlink kits/10/include/$SDKVER/um
+$ORIG/lowercase -map_winsdk -symlink kits/10/include/$SDKVER/shared
+$ORIG/fixinclude -map_winsdk kits/10/include/$SDKVER/um
+$ORIG/fixinclude -map_winsdk kits/10/include/$SDKVER/shared
 for arch in x86 x64 arm arm64; do
     if [ ! -d "kits/10/lib/$SDKVER/um/$arch" ]; then
         continue
     fi
-    $ORIG/lowercase kits/10/lib/$SDKVER/um/$arch
+    $ORIG/lowercase -symlink kits/10/lib/$SDKVER/um/$arch
 done
+
+host=x64
+if [ "$(uname -m)" = "aarch64" ]; then
+    host=arm64
+fi
 
 SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 MSVCVER=$(basename $(echo vc/tools/msvc/* | awk '{print $1}'))
-cat $ORIG/wrappers/msvcenv.sh | sed 's/MSVCVER=.*/MSVCVER='$MSVCVER/ | sed 's/SDKVER=.*/SDKVER='$SDKVER/ > msvcenv.sh
+cat $ORIG/wrappers/msvcenv.sh | sed 's/MSVCVER=.*/MSVCVER='$MSVCVER/ | sed 's/SDKVER=.*/SDKVER='$SDKVER/ | sed s/x64/$host/ > msvcenv.sh
 for arch in x86 x64 arm arm64; do
     if [ ! -d "vc/tools/msvc/$MSVCVER/bin/Hostx64/$arch" ]; then
         continue
     fi
     mkdir -p bin/$arch
-    cp $ORIG/wrappers/* bin/$arch
+    cp -a $ORIG/wrappers/* bin/$arch
     cat msvcenv.sh | sed 's/ARCH=.*/ARCH='$arch/ > bin/$arch/msvcenv.sh
 done
 rm msvcenv.sh
+
+if [ -d "$DEST/bin/$host" ] && [ -x "$(which wine64 2>/dev/null)" ]; then
+    WINEDEBUG=-all wine64 wineboot &>/dev/null
+    echo "Build msvctricks ..."
+    "$DEST/bin/$host/cl" /EHsc /O2 "$ORIG/msvctricks.cpp"
+    if [ $? -eq 0 ]; then
+        mv msvctricks.exe bin/
+        rm msvctricks.obj
+        echo "Build msvctricks done."
+    else
+        echo "Build msvctricks failed."
+    fi
+fi

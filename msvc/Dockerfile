@@ -1,25 +1,22 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
 
 ARG BUILDER_UID=1001
 
-# install dependencies
+# install dependencies and initialize the wine environment for root
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y wine64-development python3 msitools python3-simplejson python3-six ca-certificates \
- && apt-get install -y git gcc g++ ninja-build libxml-libxslt-perl make libssl-dev \
+ && apt-get install -y git gcc-10 g++-10 ninja-build libxml-libxslt-perl make libssl-dev \
  && apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev \
  && apt-get install -y wget curl unzip python3-pip \
  && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install --compile sphinx \
- && useradd --uid $BUILDER_UID --create-home --shell /bin/bash buildmaster
-
-# Initialize the wine environment for root. Wait until the wineserver process has
-# exited before closing the session, to avoid corrupting the wine prefix.
-RUN wine64 wineboot --init && \
-    while pgrep wineserver > /dev/null; do sleep 1; done
+ && useradd --uid $BUILDER_UID --create-home --shell /bin/bash buildmaster \
+ && WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init \
+ && while pgrep wineserver >/dev/null; do sleep 1; done
 
 # set up msvc
 WORKDIR /opt/msvc
@@ -63,7 +60,7 @@ RUN mkdir /home/buildmaster/dfhack-native \
  && cd /home/buildmaster/dfhack-native \
  && git clone --depth=1 https://github.com/DFHack/dfhack.git \
  && cd dfhack && git submodule update --init && cd .. \
- && cmake dfhack -GNinja -DCMAKE_BUILD_TYPE=Release \
+ && CC=gcc-10 CXX=g++-10 cmake dfhack -GNinja -DCMAKE_BUILD_TYPE=Release \
  && ninja protoc-bin \
  && cd .. \
  && mkdir -p dfhack-native-bin/depends/protobuf \

@@ -30,7 +30,7 @@ RUN PYTHONUNBUFFERED=1 ./vsdownload.py --accept-license --dest /opt/msvc \
  && rm lowercase fixinclude install.sh vsdownload.py \
  && find /opt/msvc -depth -type d -iregex '.*/.*arm[0-9]*$' -exec rm -fr {} \; \
  && find /opt/msvc -depth -type d -iregex '.*/.*x86$' -exec rm -fr {} \;
- && rm -rf wrappers \
+ && rm -rf wrappers
 
 COPY msvcenv-native.sh /opt/msvc
 

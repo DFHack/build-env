@@ -8,9 +8,9 @@ jobs:
     strategy:
       matrix:
         IMAGE_TAG:
-          - gcc-4.8
-          - latest
           - msvc
+          # - gcc-4.8
+          # - latest
     runs-on: ubuntu-latest
     steps:
     - name: Login to GHCR

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
 
@@ -7,29 +7,27 @@ ARG BUILDER_UID=1001
 # install dependencies and initialize the wine environment for root
 RUN apt-get update \
  && apt-get upgrade -y \
- && apt-get install -y wine64-development python3 msitools python3-simplejson python3-six ca-certificates \
+ && apt-get install -y wine64 python3 msitools ca-certificates \
  && apt-get install -y git gcc-10 g++-10 ninja-build libxml-libxslt-perl make libssl-dev \
  && apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev \
  && apt-get install -y wget curl unzip python3-pip \
  && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install --compile sphinx \
+ && pip3 install six \
  && useradd --uid $BUILDER_UID --create-home --shell /bin/bash buildmaster \
- && WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init \
- && while pgrep wineserver >/dev/null; do sleep 1; done
+ && $(command -v wine64 || command -v wine || false) wineboot --init \
+ && while pgrep wineserver > /dev/null; do sleep 1; done
 
 # set up msvc
 WORKDIR /opt/msvc
 COPY lowercase fixinclude install.sh vsdownload.py msvctricks.cpp ./
 COPY wrappers/* ./wrappers/
 
-# This removes the arm and x86 bits to save space (around 5.5G)
 RUN PYTHONUNBUFFERED=1 ./vsdownload.py --accept-license --dest /opt/msvc \
  && ./install.sh /opt/msvc \
  && rm lowercase fixinclude install.sh vsdownload.py \
- && rm -rf wrappers \
- && find /opt/msvc -depth -type d -iregex '.*/.*arm[0-9]*$' -exec rm -fr {} \; \
- && find /opt/msvc -depth -type d -iregex '.*/.*x86$' -exec rm -fr {} \;
+ && rm -rf wrappers
 
 COPY msvcenv-native.sh /opt/msvc
 
@@ -70,7 +68,7 @@ RUN mkdir /home/buildmaster/dfhack-native \
  && mv dfhack-native-bin dfhack-native
 
 # set up wine and ccache for the buildmaster user
-RUN WINEDLLOVERRIDES="mscoree,mshtml=" wine64 wineboot --init \
+RUN $(command -v wine64 || command -v wine || false) wineboot --init \
  && wineserver -w \
  && ccache -C
 

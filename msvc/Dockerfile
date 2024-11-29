@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-LABEL org.opencontainers.image.source https://github.com/DFHack/build-env
+LABEL org.opencontainers.image.source=https://github.com/DFHack/build-env
 
 ARG BUILDER_UID=1001
 
@@ -79,4 +79,4 @@ COPY dfhack-configure dfhack-make dfhack-test /usr/local/bin/
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD bash
+CMD ["bash"]

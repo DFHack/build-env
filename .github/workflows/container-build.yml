@@ -29,6 +29,7 @@ jobs:
         context: "{{defaultContext}}:${{ matrix.IMAGE_TAG }}"
         push: true
         tags: ${{ env.GHCR_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ matrix.IMAGE_TAG }}
+
 env:
   GHCR_NAMESPACE: dfhack
   IMAGE_NAME: build-env

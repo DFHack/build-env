@@ -35,10 +35,6 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=semver,pattern={{major}}.{{minor}}.{{patch}},value=${{ matrix.IMAGE_TAG }}
-          type=semver,pattern={{major}}.{{minor}},value=${{ matrix.IMAGE_TAG }}
-          type=semver,pattern={{major}},value=${{ matrix.IMAGE_TAG }}
     - name: Build and push
       id: push
       uses: docker/build-push-action@v6

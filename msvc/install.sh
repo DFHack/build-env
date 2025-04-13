@@ -17,21 +17,21 @@
 set -e
 
 if [ $# -lt 1 ]; then
-    echo $0 {vc.zip sdk.zip target\|target}
+    echo "$0 {vc.zip sdk.zip target|target}"
     exit 0
 fi
 
 if [ $# -eq 3 ]; then
-    VC_ZIP=$(cd $(dirname $1) && pwd)/$(basename $1)
-    SDK_ZIP=$(cd $(dirname $2) && pwd)/$(basename $2)
+    VC_ZIP=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
+    SDK_ZIP=$(cd "$(dirname "$2")" && pwd)/$(basename "$2")
     DEST=$3
 else
     DEST=$1
 fi
-ORIG=$(cd $(dirname $0) && pwd)
+ORIG=$(cd "$(dirname "$0")" && pwd)
 
-mkdir -p $DEST
-cd $DEST
+mkdir -p "$DEST"
+cd "$DEST"
 DEST=$(pwd)
 
 ln_s() {
@@ -41,9 +41,9 @@ ln_s() {
 }
 
 if [ -n "$VC_ZIP" ]; then
-    unzip $VC_ZIP
+    unzip "$VC_ZIP"
 fi
-ln_s kits "Windows Kits"
+ln_s "Windows Kits" kits
 ln_s VC vc
 ln_s Tools vc/tools
 ln_s MSVC vc/tools/msvc
@@ -71,8 +71,13 @@ cd ..
 # Thus process them to reference the other headers with lowercase names.
 # Also lowercase these files, as a few of them do have non-lowercase names,
 # and the call to fixinclude lowercases those references.
-$ORIG/lowercase -symlink include
-$ORIG/fixinclude include
+"$ORIG"/lowercase -symlink include
+"$ORIG"/fixinclude include
+if [ -d "atlmfc/include" ]; then
+    # The ATL headers are lowercased themselves, but they refer to
+    # WinSDK headers with mixed casing.
+    "$ORIG"/fixinclude "atlmfc/include"
+fi
 cd bin
 # vctip.exe is known to cause problems at some times; just remove it.
 # See https://bugs.chromium.org/p/chromium/issues/detail?id=735226 and
@@ -80,6 +85,10 @@ cd bin
 for i in $(find . -iname vctip.exe); do
     rm $i
 done
+if [ -d HostX64 ]; then
+    # 15.x - 16.4
+    mv HostX64 Hostx64
+fi
 if [ -d HostARM64 ]; then
     # 17.2 - 17.3
     mv HostARM64 Hostarm64
@@ -99,13 +108,15 @@ if [ -d kits/10 ]; then
 else
     mkdir kits
     cd kits
-    unzip $SDK_ZIP
+    unzip "$SDK_ZIP"
     cd 10
 fi
 ln_s Lib lib
 ln_s Include include
 cd ../..
-SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
+
+SDKVER=$(basename $(echo kits/10/include/10.* | awk '{print $NF}'))
+echo Using SDK version $SDKVER
 
 # Lowercase the SDK headers and libraries. As long as cl.exe is executed
 # within wine, this is mostly not necessary.
@@ -123,44 +134,78 @@ SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 # The original casing of file names is preserved though, by adding lowercase
 # symlinks instead of doing a plain rename, so files can be referred to with
 # either the out of the box filename or with the lowercase name.
-$ORIG/lowercase -map_winsdk -symlink kits/10/include/$SDKVER/um
-$ORIG/lowercase -map_winsdk -symlink kits/10/include/$SDKVER/shared
-$ORIG/fixinclude -map_winsdk kits/10/include/$SDKVER/um
-$ORIG/fixinclude -map_winsdk kits/10/include/$SDKVER/shared
-for arch in x86 x64 arm arm64; do
-    if [ ! -d "kits/10/lib/$SDKVER/um/$arch" ]; then
-        continue
+for incdir in um shared winrt km; do
+    SDK_INCDIR="kits/10/include/$SDKVER/$incdir"
+
+    if [ -d "$SDK_INCDIR" ]; then
+        "$ORIG"/lowercase -map_winsdk -symlink "$SDK_INCDIR"
+        "$ORIG"/fixinclude -map_winsdk "$SDK_INCDIR"
     fi
-    $ORIG/lowercase -symlink kits/10/lib/$SDKVER/um/$arch
+done
+
+# The WDF is a part of the Windows Driver Kit.
+WDF_INCDIR="kits/10/include/wdf"
+if [ -d "$WDF_INCDIR" ]; then
+    "$ORIG"/lowercase -map_winsdk -symlink "$WDF_INCDIR"
+    "$ORIG"/fixinclude -map_winsdk "$WDF_INCDIR"
+fi
+
+for arch in x86 x64 arm arm64; do
+    SDK_LIBDIR="kits/10/lib/$SDKVER/um/$arch"
+    DDK_LIBDIR="kits/10/lib/$SDKVER/km/$arch"
+
+    if [ -d "$SDK_LIBDIR" ]; then
+        "$ORIG"/lowercase -symlink "$SDK_LIBDIR"
+    fi
+    if [ -d "$DDK_LIBDIR" ]; then
+        "$ORIG"/lowercase -symlink "$DDK_LIBDIR"
+    fi
 done
 
 host=x64
+# .NET-based tools use different host arch directories
+dotnet_host=amd64
 if [ "$(uname -m)" = "aarch64" ]; then
     host=arm64
+    dotnet_host=arm64
 fi
 
-SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 MSVCVER=$(basename $(echo vc/tools/msvc/* | awk '{print $1}'))
-cat $ORIG/wrappers/msvcenv.sh | sed 's/MSVCVER=.*/MSVCVER='$MSVCVER/ | sed 's/SDKVER=.*/SDKVER='$SDKVER/ | sed s/x64/$host/ > msvcenv.sh
+echo Using MSVC version $MSVCVER
+
+# Support `import std` for CMake.
+if [ -d "VC/Tools/MSVC/$MSVCVER/modules" ]; then
+    ln_s VC/Tools/MSVC/$MSVCVER/modules modules
+fi
+
+cat "$ORIG"/wrappers/msvcenv.sh \
+| sed 's/MSVCVER=.*/MSVCVER='$MSVCVER/ \
+| sed 's/SDKVER=.*/SDKVER='$SDKVER/ \
+| sed s/x64/$host/ \
+| sed s/amd64/$dotnet_host/ \
+> msvcenv.sh
+
 for arch in x86 x64 arm arm64; do
-    if [ ! -d "vc/tools/msvc/$MSVCVER/bin/Hostx64/$arch" ]; then
+    if [ ! -d "vc/tools/msvc/$MSVCVER/bin/Host$host/$arch" ]; then
         continue
     fi
     mkdir -p bin/$arch
-    cp -a $ORIG/wrappers/* bin/$arch
+    cp -a "$ORIG"/wrappers/* bin/$arch
     cat msvcenv.sh | sed 's/ARCH=.*/ARCH='$arch/ > bin/$arch/msvcenv.sh
 done
 rm msvcenv.sh
 
-if [ -d "$DEST/bin/$host" ] && [ -x "$(which wine64 2>/dev/null)" ]; then
-    WINEDEBUG=-all wine64 wineboot &>/dev/null
-    echo "Build msvctricks ..."
-    "$DEST/bin/$host/cl" /EHsc /O2 "$ORIG/msvctricks.cpp"
-    if [ $? -eq 0 ]; then
-        mv msvctricks.exe bin/
-        rm msvctricks.obj
-        echo "Build msvctricks done."
-    else
-        echo "Build msvctricks failed."
+if [ -d "$DEST/bin/$host" ]; then
+    if WINE="$(command -v wine64 || command -v wine)"; then
+        WINEDEBUG=-all "${WINE}" wineboot &>/dev/null
+        echo "Build msvctricks ..."
+        "$DEST/bin/$host/cl" /EHsc /O2 "$ORIG/msvctricks.cpp"
+        if [ $? -eq 0 ]; then
+            mv msvctricks.exe bin/
+            rm msvctricks.obj
+            echo "Build msvctricks done."
+        else
+            echo "Build msvctricks failed."
+        fi
     fi
 fi

@@ -48,7 +48,7 @@ The following instructions are for setting up MSVC without docker.
 
 ```bash
 apt-get update
-apt-get install -y wine64-development python3 msitools python3-simplejson python3-six ca-certificates winbind
+apt-get install -y wine64 python3 msitools ca-certificates winbind
 ```
 
 ## Installation
@@ -89,7 +89,7 @@ as usual. You need less prerequisites as wine won't be needed:
 
 ```bash
 apt-get update
-apt-get install -y python3 msitools python3-simplejson python3-six ca-certificates
+apt-get install -y python3 msitools ca-certificates
 
 # Download and unpack MSVC
 ./vsdownload.py --dest ~/my_msvc
@@ -182,6 +182,26 @@ Other generators are untested and may or may not work. Use it at your own peril.
 ## Do I _need_ CMake to use msvc-wine?
 
 No. Using Ninja or GNU Make directly should work.
+
+## How to integrate with vcpkg?
+
+You need define your own triplets, e.g. `my-triplets/x64-windows.cmake`:
+```cmake
+set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE dynamic)
+set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE ${VCPKG_ROOT_DIR}/scripts/toolchains/windows.cmake)
+
+set(ENV{CC} cl.exe)
+set(ENV{CXX} cl.exe)
+set(ENV{PATH} "/opt/msvc/bin/x64:$ENV{PATH}")
+```
+
+Then you can install packages using overlay triplets:
+```bash
+vcpkg install sqlite3:x64-windows --overlay-triplets=my-triplets
+```
+See examples [here](test/test-vcpkg.sh).
 
 ## I get `ninja: error: build.ninja:225: bad $-escape (literal $ must be written as $$)`
 
